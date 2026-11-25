@@ -20,6 +20,7 @@ The four UTF-8 CSV files come from the saved Jolpica pages in `data/raw/`. The r
 | driver | results, qualifying, sprint | Jolpica driverId | Identifier |
 | constructor | results, qualifying, sprint | Original Jolpica constructorId for this entry, before lineage mapping | Identifier |
 | grid | results, sprint | Starting grid position as recorded, including any source value of 0 | Grid slot |
+| position_text | results, sprint | Original Jolpica positionText. A numeric string denotes a classified position eligible for rescoring. Letter codes receive zero points. | Text |
 | finishing_position | results, sprint | Numeric result order from position. Read with status for retirements or other outcomes. | Rank, 1 = winner |
 | status | results, sprint | Outcome reported by Jolpica, such as Finished or a retirement reason | Text |
 | points | results, sprint | Points awarded to the driver as supplied in the original result | Championship points, can be fractional |

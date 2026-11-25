@@ -35,9 +35,10 @@ Format for each entry: **decision**, then *why*, then alternatives considered.
 ### 2.2 Use each team's best car, not each driver (2026-11-24)
 *Why:* The question is about teams and cars. Taking the team's faster driver also partly smooths out a team having one weaker driver.
 
-### 2.3 Qualifying: compare teams in the last session they both ran (2026-11-25, Devesh and Claude)
+### 2.3 Qualifying: compare teams in the last session they both ran (2026-11-25, Devesh and Claude) · SUPERSEDED by 2.12
+> Replaced the same day after the first results showed a flaw. Kept here because the reasoning, and why it failed, is part of the story. See 2.12.
 **Decision:** Two teams are compared using their best laps in the **last qualifying session both took part in**. In practice: dominance margin (1st vs 2nd team) usually comes from Q3, field spread (fastest vs median team) usually from Q2.
-*Why:* Devesh pointed out that the original plan (Q1 only) is flawed: top teams often don't push in Q1, since avoiding elimination matters more than a fast lap. That would make the front look slower than it really is and shrink the dominance margin. Comparing within one session also removes **track evolution** (the track gets faster from Q1 to Q3 as rubber goes down), since both teams ran on the same track at the same time.
+*Why:* Devesh pointed out that the original plan (Q1 only) is flawed: top teams often don't push in Q1, since avoiding elimination matters more than a fast lap. That would make the front look slower than it really is and shrink the dominance margin. Comparing within one session also **reduces** track evolution bias (the track gets faster from Q1 to Q3 as rubber goes down), since both teams ran in the same session. It doesn't remove it completely: laps in one session can be several minutes apart, e.g. on a drying track.
 *Alternatives:*
 - **Q1 only** (original plan): every car runs it, but top teams sandbag. Kept as a robustness check.
 - **Each team's best time across Q1 to Q3** (Devesh's first idea): captures full effort, but mixes sessions, so top teams' Q3 laps on a faster track get compared with backmarkers' Q1 laps, and it breaks completely in the refuelling era (2.4). Kept as a robustness check.
@@ -62,7 +63,7 @@ Format for each entry: **decision**, then *why*, then alternatives considered.
 
 ### 2.7 Race pace from each team's fastest race lap (2026-11-24)
 *Why:* A race-day check on the qualifying story, and the only lap data available back to 2006 without heavy downloads.
-*Caveat:* noisy. From 2019 to 2024 a bonus point for fastest lap gave teams a reason to pit late just to set one.
+*Caveat:* noisy. From 2019 to 2024 a bonus point for fastest lap gave teams a reason to pit late just to set one. A mechanical retirement can also cut short a driver's chance to set a representative lap, so reliability leaks slightly into race pace (raised by GPT, 2026-11-25).
 
 ### 2.8 Wet sessions included (2026-11-24, Devesh)
 *Why:* Weather is part of racing. Medians limit the effect of any single wet session, and wet sessions are flagged in `wet_sessions.csv` so we can point out if a result leans on them.
@@ -70,7 +71,41 @@ Format for each entry: **decision**, then *why*, then alternatives considered.
 ### 2.9 Headline pace measure: not decided yet (2026-11-25, Devesh)
 Devesh will choose between dominance margin and field spread after seeing the Day 2 numbers.
 
+### 2.10 Team order and signed gaps (2026-11-25) · SUPERSEDED by 2.12
+**Decision:** Teams are ordered by the latest *usable* session they reached, then by their time in it (so for 2006 to 2009 the order comes from Q2, not the fuel-affected Q3). Gaps are **signed**: if a lower-ranked team was quicker than the leader in the session used for their comparison, the gap is negative, not clipped to zero.
+*Why:* The order should come from the same pure-pace sessions as the gaps. Using the official order in 2006 to 2009 would let race fuel decide who counts as "fastest." Negative gaps can still happen from 2010 on (e.g. a leader setting its Q2 time on slower tyres, 2014 to 2021) and keeping the sign is more honest than hiding it.
+*Alternatives:* GPT suggested the official qualifying order plus signed gaps. Kept the signed gaps, changed the order rule for 2006 to 2009.
+
+### 2.11 Median with an even number of teams (2026-11-25) · partly superseded by 2.12
+**Decision:** With an even number of teams, field spread is the average of the two middle teams' gaps, each computed in its own last common session with the leader.
+*Why:* Averaging raw lap times instead could mix a Q2 lap with a Q3 lap (suggested by GPT).
+
+**Clarification (2026-11-25, Day 2 qualifying prompt):** Take the numerical median of all signed team gaps including the leader’s zero. For an even field, average the middle two after sorting the gaps. Ranking by progression can place a larger Q3 gap ahead of a smaller Q2 gap. Using the middle qualifying ranks would therefore answer a different question.
+
+**Exact-time ties (implementation convention for review):** When teams tie in their latest usable segment, use the preceding usable segment times, then lineage name if necessary, for a deterministic ordering. The saved segment minima do not identify which team set an identical time first.
+
+### 2.12 Qualifying: each team's best lap from any session (2026-11-25, Devesh) · CURRENT
+**Decision:** Each lineage's qualifying pace is its **best lap from any session** (Q1, Q2 or Q3; only Q1 and Q2 for 2006 to 2009). Gap = that lap vs the best team's best lap, in %. Teams are ordered by their best lap. Field spread = median of all gaps including the leader's 0 (for an even number of teams, the average of the two middle gaps). Dominance margin = the 2nd team's gap. All gaps are therefore 0 or positive.
+
+*What went wrong with 2.3:* The first results showed teams knocked out early looking closer to the leader than teams that reached Q3. At Bahrain 2023, Williams (10th, out in Q1) showed a 0.18% gap to Red Bull, smaller than Ferrari's 0.33% from 2nd place, and Haas (6th) showed 0.34% while Alpine (5th) showed 1.42%. The cause: each team was compared with the leader in the last session they both ran, but the leader wasn't pushing in Q1 or Q2 (Red Bull's Bahrain 2023 Q1 lap was 91.295s vs 89.708s in Q3, almost 2% slower). The method fixed sandbagging for the dominance margin, since the top two both push in Q3, but brought it straight back for the field spread, since the median team is usually knocked out in Q2. It also made gap order and qualifying order disagree in 294 of 420 races.
+
+*Why the best-lap method is better:* Every team, the leader included, is measured at its best effort, so the gaps line up with the real order. At Bahrain 2023 the field spread becomes about 1.29% instead of 0.70%; the old method made the midfield look twice as close as it was. The dominance margin barely changes (Ferrari 0.33% either way), since both top teams set their best laps in Q3. It is also a standard way F1 analysts compare car pace (often called "supertimes"), and it was Devesh's first suggestion.
+
+*Costs, stated honestly:*
+1. **Track evolution:** teams knocked out early ran on a slower track, so they look slightly worse than they were (roughly 0.2 to 0.4%).
+2. **Format difference in 2006 to 2009:** with Q3 excluded, the leader's best is a Q2 lap, so the track-evolution effect is smaller and field spread in those years looks slightly tighter purely because of measurement. **Fix:** a "refuelling-era qualifying" control (2006 to 2009) in the Day 3 model.
+
+*Robustness versions kept:* Q1 only (no sandbagging fix, but no format difference either) and the last-common-session method from 2.3.
+
+*Lesson for the write-up:* check a method on a couple of races you know before trusting it on 420. The hand check of Bahrain 2023 is what caught this.
+
 ---
+
+### 2.13 Day 2 timing and comparison conventions (2026-11-25)
+
+- Equal best laps get equal percentage gaps. For a stable display order, break ties using the last-common-session rank. When a lineage sets its own best time in multiple sessions, label the earliest eligible session. Neither display choice changes the median or margin.
+- Take the fastest recorded time from either driver. A missing segment supplies no lap. Apply the Q1 eligibility rule in 5.2 to qualifying. For race pace, omit a lineage if neither driver recorded a lap, since there is no observed time to compare. A margin requires two timed lineages.
+- Use unweighted Pearson correlations. For the race comparison, use the same weekends with all four measures available so the coefficients share a sample (419 here). For the largest qualifying disagreements, use all 420 qualifying sessions and rank by absolute difference in percentage points. For season correlations, compute each measure's median on its eligible races first, then pair the 21 seasons so each season contributes once.
 
 ## 3. Outcome measures
 
@@ -87,6 +122,8 @@ Devesh will choose between dominance margin and field spread after seeing the Da
 ### 3.3 Sessions count in proportion to the points they award (2026-11-25, Devesh)
 - **Sprints: 1/3 weight** (about a third of the distance and a third of the points). Sprint qualifying isn't used for pace.
 - **2021 Belgium: 1/2 weight** for wins and points (half points awarded after two laps behind the safety car). Excluded from race pace (no real racing laps). Its qualifying stays in because it ran in full.
+- **2009 Malaysia: 1/2 weight** for wins and points (red-flagged in rain after 31 of 56 laps, half points awarded). Raised by GPT, recommended by Claude, **approved by Devesh** (2026-11-25). Unlike Belgium its race laps were real racing, so it stays in race pace.
+- **Sprint points are not multiplied by 1/3 again.** The 1/3 weight applies to sprint *wins*. Sprint *points* come straight from the sprint table (8 for a win), which is already smaller. Multiplying again would count the sprint down twice. The zero-sprint robustness check drops both sprint wins and sprint points.
 - Robustness check: sprints at 0 weight.
 
 ### 3.4 Reliability: not measured separately for now (2026-11-25, Devesh)
@@ -96,6 +133,10 @@ Devesh will choose between dominance margin and field spread after seeing the Da
 *Revisit:* when deciding how much weight each measure gets in the conclusions.
 
 ---
+
+### 3.5 Classification determines points eligibility (2026-11-25, Devesh)
+
+Award points only when the API positionText is numeric and within the applicable points scale. The numeric finishing order alone can place an unclassified driver inside the points when few cars are classified.
 
 ## 4. Teams and tracks
 
@@ -115,3 +156,7 @@ The API had no qualifying times for 2025 round 6. All 20 drivers' Q1 to Q3 times
 
 ### 5.2 Teams with no Q1 time drop out of that race's qualifying gap (2026-11-24)
 Five team-race cases (e.g. Red Bull at 2014 Abu Dhabi, excluded from qualifying). The race and the other teams stay in.
+
+**Note (2026-11-25, Claude):** under the best-lap method (2.12) this rule still holds, for a better reason: these are mostly cars whose qualifying was deleted for breaking the rules. Example: Williams at 2024 Netherlands, where Albon's Q1 time is missing but his Q2 and Q3 times are still in the API; his qualifying was deleted for an illegal car, so the team stays out. Keep excluding them.
+
+**Scorecard conventions (2026-11-25):** Count a lineage as starting if at least one GP result survives removal of withdrawals (W, Withdrew) and explicit DNS records. A grid slot of zero alone does not establish a DNS. Count both wet and mixed qualifying flags because each indicates rain affected qualifying. Report best-lap once as the main method alongside Q1 and last-common. The 2023 example in 3.1 uses GP wins alone (9,132.23). Applying the sprint weights in 3.3 gives 8,939.04.

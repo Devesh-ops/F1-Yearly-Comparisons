@@ -139,3 +139,73 @@ Updated src/02_clean.py to fill empty 2025 Miami qualifying cells from Claude’
 - **Points:** current FIA system for every season. **Weights:** sprints 1/3, 2021 Belgium 1/2 (excluded from race pace, qualifying kept).
 - **Reliability:** no separate metric for now (shows up through points HHI). Revisit later.
 - README method sections updated to match.
+
+## 2026-11-25 · Claude · Response to GPT's Day 2 plan
+
+- **Agreed and recorded in `DECISIONS.md`:** 2009 Malaysia at 1/2 weight (pending Devesh's approval), signed gaps, even-number median as the average of the two middle teams' gaps, sprint points not reweighted, "reduces" track evolution (not "removes"), mechanical retirements can affect race pace.
+- **Changed:** team order. Not the official order: teams are ordered by the latest *usable* session reached, then time (2006 to 2009 order from Q2, since Q3 was fuel-affected). See DECISIONS 2.10.
+- **Claude will hand-check** 2009, 2021 and 2023 (GPT's suggestion) plus 2008 R1 and 2023 R1.
+
+## 2026-11-25 · GPT · Day 2 foundations
+
+Rebuild results.csv and sprint.csv with `.venv/bin/python src/02_clean.py`. Both preserve position_text. Documented eligibility in DECISIONS.md and the data dictionary. src/common.py loads team lineages, defines outcome weights and points eligibility, and produces season_tags(). Grouping numeric position_text by season and round yielded two GPs below ten classified drivers: 2006 R10 (9), 2008 R1 (8). All numeric classification strings agreed with finishing_position. Checked Belgium's 12.5-point win, an 8-point sprint win and zero points for R. Claude can verify these and the six era boundaries. Malaysia 2009 remains an open decision and currently receives the ordinary GP weight.
+
+## 2026-11-25 · Claude · Prompt 1 review
+
+- Recomputed from `results.csv`: only 2006 R10 (USA, 9 classified) and 2008 R1 (Australia, 8 classified) have fewer than 10 classified finishers. Matches GPT. Rescored totals 100 and 98 are right for 9 and 8 scorers.
+- Every numeric `position_text` equals `finishing_position`. Disqualifications score zero (e.g. both McLarens at 2025 Las Vegas, position_text D).
+- `common.py`: points tables, session weights and season tags checked line by line. Tags match the README eras.
+- **Still open:** 2009 Malaysia weight (currently 1, pending Devesh).
+
+## 2026-11-25 · GPT · Per-race qualifying gaps
+
+Run `.venv/bin/python src/03_metrics.py` to regenerate outputs/tables/race_quali_gaps.csv and outputs/tables/team_quali_gaps.csv and print Bahrain 2023 and Australia 2008. Verified 420 race rows, 4,424 eligible team rows, zero leader gaps and all pre-2010 Q3 values excluded. The prompt specifies a numerical median of signed gaps. It differs from taking the middle qualifying ranks at 294 races. Eight team entries tie an earlier-ranked team on the ordering segment and time. The preceding-segment tie convention is documented in DECISIONS.md for Claude to review. Wet flags describe the whole qualifying session and retain source confidence. Malaysia's outcome weight remains pending and does not enter these files.
+
+## 2026-11-25 · Claude · Prompt 2 review: qualifying method changed
+
+- GPT's arithmetic checked and correct (e.g. Ferrari Bahrain 2023: 90.000 / 89.708 = 0.3255%).
+- **Method flaw found:** with the last-common-session method, teams knocked out early were compared with the leader's Q1/Q2 laps where it wasn't pushing. Bahrain 2023: Williams 0.18% vs Ferrari 0.33%; field spread 0.70% instead of about 1.29%.
+- **Decision (Devesh):** main method is now each lineage's best lap from any session (Q3 excluded 2006 to 2009). Last-common-session kept as a robustness version. Refuelling-era control added to the Day 3 plan. Full write-up in DECISIONS.md 2.12; 2.3 and 2.10 marked superseded.
+- **2009 Malaysia:** half weight approved by Devesh (DECISIONS 3.3).
+
+## 2026-11-25 · GPT · Best-lap qualifying rerun
+
+Ran `.venv/bin/python src/03_metrics.py` to rebuild both qualifying tables under decision 2.12. Verified monotonic primary gaps and zero leader gaps across 420 races (4,424 lineage entries). The previous ranks, gaps, spreads and margins reproduce under the last-common columns. Claude can hand-check Bahrain 2023 and Australia 2008 from the script output. Q1-only follows in Prompt 3. Applied decision 3.3 in src/common.py: Malaysia 2009 counts as half a win and awards 12.5 winner points. The weight applies only to outcomes; Malaysia remains eligible for race pace.
+
+## 2026-11-25 · Claude · Prompt 2 rerun verified
+
+- Independently recomputed best-lap field spread and dominance margin for all 420 races from `qualifying.csv`. Dominance margin matches GPT exactly in every race. Field spread matches in 419 of 420.
+- The one difference (2024 R15, Netherlands) is intended: Williams is excluded because Albon's Q1 time is missing (qualifying deleted), even though the API still holds his Q2 and Q3 times. Recorded in DECISIONS 5.2.
+- Bahrain 2023 matches the hand calculation: field spread 1.286%, dominance margin 0.326%. Ready for Prompt 3.
+
+## 2026-11-25 · GPT · Q1-only qualifying and race pace
+
+Ran `.venv/bin/python src/03_metrics.py` to update [qualifying](outputs/tables/race_quali_gaps.csv) and generate [race pace](outputs/tables/race_pace_gaps.csv) under decisions 2.7, 2.12 and 3.3. Independently recomputed both spreads and margins from sorted lineage lap times for all 420 qualifying sessions and 419 races. Belgium 2021 contributes only to qualifying. Malaysia 2009 contributes to both. Claude can review the [printed comparisons](outputs/tables/pace_comparison.txt): Pearson correlations use 419 common races, and the top five absolute qualifying differences use all 420. Brazil 2010 has the largest difference (3.803 percentage points).
+
+## 2026-11-25 · Claude · Prompt 3 review
+
+- **All five races where best-lap and Q1-only disagree most are wet or mixed qualifying sessions** (all flagged high confidence in `wet_sessions.csv`): Brazil 2010, Belgium 2023, Malaysia 2010, Hungary 2016, Australia 2013. When the track dries or gets wetter between Q1 and Q3, best laps from different sessions aren't comparable. The method behaves well in dry sessions; weather is its weak spot.
+- **Race pace (fastest race lap) is a weak measure at race level:** r = 0.32 with best-lap field spread, 0.10 for dominance margin. Expected, since fastest race laps depend on tyre age, fuel load, traffic and (2019 to 2024) the fastest-lap point. Treat it as supporting evidence only; check again at season level, where noise averages out.
+- Best lap correlates most with race pace of the three qualifying methods, a small extra point in its favour.
+- **Proposed for Devesh:** keep wet sessions in (his decision), but add a wet-qualifying control in the Day 3 model and a robustness run without wet qualifying. Season-level race pace correlation added to Prompt 5.
+
+## 2026-11-25 · GPT · Weekend outcomes and season scorecard
+
+Run `.venv/bin/python src/03_metrics.py` and `.venv/bin/python src/04_scorecard.py`. Review [weekend outcomes](outputs/tables/race_outcomes.csv), [season scorecard](outputs/tables/season_scorecard.csv), [points and win checks](outputs/tables/outcome_checks.txt) and [full printout](outputs/tables/season_scorecard_printout.txt). Verified unique weekend-lineage keys and all 21 weighted win totals against GP and sprint counts, including half-weight Malaysia and Belgium. Claude can check the 2012 HHI of 2,750 and the 2023 weighted HHI of 8,939.04 against the GP-only benchmark of 9,132.23. Best-lap versus race-pace median correlations are 0.580637 for spread and 0.214409 for margin.
+
+## 2026-11-25 · Claude · Prompts 4 and 5 review
+
+- **Independently recomputed** win HHI and points HHI for all 21 seasons from `results.csv` and `sprint.csv` (current FIA points, classified finishers only, sprints 1/3 for wins, Belgium 2021 and Malaysia 2009 at 1/2): match GPT to rounding in every season. Season medians of best-lap field spread and dominance margin also match exactly.
+- 2023 win HHI 8,939 is right. Claude's earlier ~9,130 was Grand Prix wins only; sprints (Red Bull 5 of 6, McLaren 1) bring it down slightly.
+- Season-level correlation between qualifying and race pace: 0.58 field spread, 0.21 dominance margin. Race pace agrees reasonably on the midfield, not on the gap at the front.
+- **Things to flag for Devesh (first look, not conclusions):**
+  1. Points HHI has a narrow range (about 1,600 to 2,300) because points go 10 deep and each team has two cars, so even 2023 only scores 2,074. It separates seasons much less than win HHI. Worth deciding whether it earns a place in the conclusions.
+  2. 2009 to 2010 field spread jumps from 0.60% to 1.48%. 2010 isn't a reset, but it's when Q3 comes back into our measure and three new backmarker teams arrived. This is the measurement effect the refuelling-era control is meant to absorb.
+  3. 2023: Red Bull won 21 of 22 but its qualifying dominance margin was only 0.19%. Its edge was on race day, not one-lap pace.
+
+## 2026-11-25 · GPT · Day 2 wrap-up
+
+- Built the classification-aware cleaner, [shared helpers](src/common.py), [weekend metrics](src/03_metrics.py) and [season scorecard](src/04_scorecard.py). The [tables folder](outputs/tables/) contains five analysis CSVs and three review printouts. [README](README.md#how-to-reproduce) now covers the run order and printout commands. [DECISIONS 2.13](DECISIONS.md) records exact ties, missing laps and comparison samples.
+- To reproduce from the snapshot, activate the environment and run `python src/02_clean.py`, `python src/03_metrics.py`, then `python src/04_scorecard.py`. For this wrap-up, reran both Day 2 scripts from the processed inputs and verified all eight output files matched their previous checksums.
+- Claude has verified both HHIs and the main qualifying season medians across all 21 seasons. Ready for final review: starter and distinct-winner counts, wet/mixed session counts, the tie and missing-time conventions, and the README commands.
+- Open for Devesh before Day 3: Claude proposed a wet-qualifying control and a sensitivity run excluding flagged sessions. Unflagged weather is unknown. The 2026 snapshot ends at round 21, and the interpretation of the 2009–10 change remains uncertain because the qualifying measurement and team field both changed.

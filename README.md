@@ -1,6 +1,6 @@
 # How do rule resets shape F1 dominance? Every season from 2006 to 2026
 
-*Status: Day 1 done, Day 2 (metrics) in progress. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress, `DECISIONS.md` for the reasoning behind every method choice, and `AGENTS.md` for how we work.*
+*Status: Day 2 complete through the season scorecard. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress, `DECISIONS.md` for the reasoning behind every method choice, and `AGENTS.md` for how we work.*
 
 ## The question
 
@@ -50,13 +50,13 @@ The budget cap starts in 2021, the last year of the wide-car era. That's useful:
 
 Each race weekend produces three numbers per team. All gaps are in **% of the fastest time**, not seconds, so short and long tracks are comparable.
 
-1. **Qualifying gap:** two teams are compared in the **last qualifying session they both took part in**, using each team's best lap in that session. Teams are ordered by their best qualifying position. Top teams often don't push in Q1, the track gets faster from Q1 to Q3, and comparing within one session handles both. **2006 to 2009: Q3 is never used**, because it was run with race fuel in the refuelling era, so Q2 is the latest comparable session. Full reasoning in `DECISIONS.md`.
+1. **Qualifying gap:** each team's **best lap from any qualifying session** vs the best team's best lap, in %. Every team is measured at its best effort, the leader included, so early-round sandbagging by top teams doesn't distort the gaps. **2006 to 2009: Q3 is never used**, because it was run with race fuel in the refuelling era. Full reasoning, including an earlier method that failed, in `DECISIONS.md` (2.12).
 2. **Race pace gap:** each team's fastest lap in the race, from the results data.
 3. **Results:** who won, and points under one fixed points system (below).
 
 From these, every weekend gets:
-- **Field spread:** gap from the fastest team to the median team. How bunched up is the grid? (Usually compared in Q2.)
-- **Dominance margin:** gap from the fastest team to the second-fastest. How far ahead is the leader? (Usually compared in Q3.)
+- **Field spread:** gap from the fastest team to the median team. How bunched up is the grid?
+- **Dominance margin:** gap from the fastest team to the second-fastest. How far ahead is the leader?
 
 ### Step 2. A scorecard for every season
 
@@ -109,7 +109,7 @@ Rule: **a session counts in proportion to the points it awarded.**
 
 Sprints count at **1/3 weight**: a sprint is about a third of a Grand Prix distance and offers about a third of the points (8 for a win vs 25).
 
-**2021 Belgium counts at 1/2 weight** for wins and points, since half points were awarded after two laps behind the safety car. It's left out of race pace (no real racing laps), but its qualifying stays in because that ran in full.
+**2021 Belgium counts at 1/2 weight** for wins and points, since half points were awarded after two laps behind the safety car. It's left out of race pace (no real racing laps), but its qualifying stays in because that ran in full. **2009 Malaysia also counts at 1/2 weight** (stopped in rain, half points awarded; approved by Devesh), but stays in race pace since its laps were real racing. Sprint points come straight from the sprint table and aren't weighted again.
 - A sprint win counts as 1/3 of a win in win HHI.
 - In points HHI, sprints are rescored on 8-7-6-5-4-3-2-1 for every season, including 2021 when the real system was 3-2-1.
 - Sprint qualifying isn't used for the qualifying gap, so that metric means the same in 2006 and 2026.
@@ -128,7 +128,8 @@ Included. They spread the field and add noise, which is why season gaps use medi
 - Without one-off tracks, and core tracks only.
 - With a simple time trend added. F1 may have gotten tighter over time for reasons other than rules (reliability, simulation tools), and this checks that the rule-cycle effect isn't just that trend.
 - Qualifying gap vs race pace gap: if both tell the same story, the finding is solid.
-- Qualifying method: last common session (main) vs each team's best time across all sessions vs Q1 only.
+- Qualifying method: best lap from any session (main) vs Q1 only vs last common session.
+- Day 3 model includes a refuelling-era qualifying control (2006 to 2009), since Q3 isn't used in those years.
 
 ## Data
 
@@ -195,6 +196,25 @@ The checker reports round coverage and missing qualifying or winners. The cleane
 To fetch missing archives, run `python src/01_download.py` before the checker. It defaults to 2006–2026 and reuses cached responses. For a **new** 2026 snapshot, run `python src/01_download.py --seasons 2026 --force`, then repeat the check and clean steps. Refreshing replaces that season’s raw files and updates the manifest.
 
 The team lineage, track layout and wet-session tables are versioned research inputs. Reproduce their use by retaining the CSVs from the same checkout. Audit individual decisions using their source URLs and the definitions in [the data dictionary](data/processed/DATA_DICTIONARY.md). When new rounds arrive, check their weather separately. Missing weather flags represent unverified conditions.
+
+### Rebuild the Day 2 metrics and scorecard
+
+With the virtual environment active, run these commands from the repository root after cleaning. Both scripts import the lineage, scoring and rule-cycle helpers from `src/common.py`.
+
+```bash
+metrics_log=$(mktemp)
+python src/03_metrics.py > "$metrics_log"
+python src/04_scorecard.py | tee outputs/tables/season_scorecard_printout.txt
+```
+
+The metrics script writes four CSVs under `outputs/tables/`: `team_quali_gaps.csv` and `race_quali_gaps.csv` contain qualifying gaps, `race_pace_gaps.csv` contains fastest-race-lap summaries, and `race_outcomes.csv` contains wins and points by lineage and weekend. The scorecard script reads the three race-level files and writes `season_scorecard.csv`. The checked-in snapshot covers 420 qualifying sessions, 419 race-pace weekends and 21 season rows. The 2026 row covers 21 Grands Prix.
+
+To recreate the two saved review extracts from the same metrics run, use the same terminal:
+
+```bash
+sed -n '/^field_spread Pearson/,/^Total weighted wins/p' "$metrics_log" | sed '$d' | sed '$d' > outputs/tables/pace_comparison.txt
+sed -n '/^Total weighted wins/,$p' "$metrics_log" > outputs/tables/outcome_checks.txt
+```
 
 ## Known limitations
 

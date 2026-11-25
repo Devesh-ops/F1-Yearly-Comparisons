@@ -1,0 +1,21 @@
+field_spread Pearson correlations (419 common races)
+             Best lap  Last common  Q1 only  Race pace
+Best lap       1.0000       0.7552   0.5701     0.3209
+Last common    0.7552       1.0000   0.4912     0.2679
+Q1 only        0.5701       0.4912   1.0000     0.1637
+Race pace      0.3209       0.2679   0.1637     1.0000
+
+dominance_margin Pearson correlations (419 common races)
+             Best lap  Last common  Q1 only  Race pace
+Best lap       1.0000       0.8616   0.3349     0.0951
+Last common    0.8616       1.0000   0.2746     0.0855
+Q1 only        0.3349       0.2746   1.0000     0.0149
+Race pace      0.0951       0.0855   0.0149     1.0000
+
+Five largest field-spread differences (percentage points)
+ season  round             race_name  field_spread  field_spread_q1  absolute_diff_pp
+   2010     18  Brazilian Grand Prix      4.948301         1.145758          3.802543
+   2023     12    Belgian Grand Prix      4.076087         0.556213          3.519874
+   2010      3  Malaysian Grand Prix      1.649370         4.379346          2.729976
+   2016     11  Hungarian Grand Prix      2.323517         4.790894          2.467378
+   2013      1 Australian Grand Prix      3.375016         1.442252          1.932764

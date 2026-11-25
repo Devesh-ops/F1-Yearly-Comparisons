@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 DATA = Path(__file__).resolve().parents[1] / "data"
 RACE = ["season", "round", "race_name", "date", "circuit_id", "circuit_name", "track_layout_id"]
 DRIVER = ["season", "round", "driver", "constructor"]
-RESULT = DRIVER + ["grid", "finishing_position", "status", "points", "fastest_lap_seconds"]
+RESULT = DRIVER + ["grid", "finishing_position", "position_text", "status", "points", "fastest_lap_seconds"]
 QUALIFYING = DRIVER + ["q1_seconds", "q2_seconds", "q3_seconds"]
 SCHEMAS = {"races": RACE, "results": RESULT, "qualifying": QUALIFYING, "sprint": RESULT}
 
@@ -106,7 +106,7 @@ def main():
                                       for q in ("Q1", "Q2", "Q3")]
                         else:
                             lap = entry.get("FastestLap", {}).get("Time", {}).get("time")
-                            values = [entry["grid"], entry["position"], entry["status"],
+                            values = [entry["grid"], entry["position"], entry["positionText"], entry["status"],
                                       entry["points"], seconds(lap, f"{location} FastestLap", failures)]
                         tables[name][key] = (*common, *values)
 

@@ -1,0 +1,48 @@
+Total weighted wins by season
+season
+2006    18.0
+2007    17.0
+2008    18.0
+2009    16.5
+2010    19.0
+2011    19.0
+2012    20.0
+2013    19.0
+2014    19.0
+2015    19.0
+2016    21.0
+2017    20.0
+2018    21.0
+2019    21.0
+2020    17.0
+2021    22.5
+2022    23.0
+2023    24.0
+2024    26.0
+2025    26.0
+2026    23.0
+
+Lineage points checks
+                        rescored_points  api_points
+season lineage                                     
+2008   Alpine                     203.0        80.0
+       Aston Martin                 1.0         0.0
+       Audi                       334.0       135.0
+       Ferrari                    429.0       172.0
+       McLaren                    379.0       151.0
+       Mercedes                    40.0        14.0
+       Racing Bulls               107.0        39.0
+       Red Bull Racing             93.0        29.0
+       Super Aguri                  0.0         0.0
+       Toyota                     152.0        56.0
+       Williams                    77.0        26.0
+2023   Alpine                     120.0       120.0
+       Aston Martin               279.0       280.0
+       Audi                        16.0        16.0
+       Ferrari                    406.0       406.0
+       Haas                        12.0        12.0
+       McLaren                    300.0       302.0
+       Mercedes                   404.0       409.0
+       Racing Bulls                24.0        25.0
+       Red Bull Racing            849.0       860.0
+       Williams                    28.0        28.0

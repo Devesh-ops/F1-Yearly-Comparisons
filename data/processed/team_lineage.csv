@@ -1,0 +1,34 @@
+constructor_id,constructor_name,lineage,first_season,last_season,source,certainty
+alfa,Alfa Romeo,Audi,2019,2023,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+alphatauri,AlphaTauri,Racing Bulls,2020,2023,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+alpine,Alpine F1 Team,Alpine,2021,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+aston_martin,Aston Martin,Aston Martin,2021,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+audi,Audi,Audi,2026,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+bmw_sauber,BMW Sauber,Audi,2006,2009,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+brawn,Brawn,Mercedes,2009,2009,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+cadillac,Cadillac F1 Team,Cadillac,2026,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+caterham,Caterham,Caterham,2012,2014,https://www.bbc.co.uk/sport/formula1/15579228,certain
+ferrari,Ferrari,Ferrari,2006,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+force_india,Force India,Aston Martin,2008,2018,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq | https://api.fia.com/news/fia-approves-mid-season-entry-racing-point-force-india,certain
+haas,Haas F1 Team,Haas,2016,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+honda,Honda,Mercedes,2006,2008,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+hrt,HRT,HRT,2010,2012,https://en.wikipedia.org/wiki/HRT_Formula_1_Team,certain
+lotus_f1,Lotus F1,Alpine,2012,2015,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+lotus_racing,Lotus,Caterham,2010,2011,https://www.bbc.co.uk/sport/formula1/15579228,certain
+manor,Manor Marussia,Manor,2015,2016,https://www.racefans.net/f1-information/f1-teams/marussia/,certain
+marussia,Marussia,Manor,2012,2014,https://www.racefans.net/f1-information/f1-teams/marussia/,certain
+mclaren,McLaren,McLaren,2006,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+mercedes,Mercedes,Mercedes,2010,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+mf1,MF1,Aston Martin,2006,2006,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+racing_point,Racing Point,Aston Martin,2019,2020,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+rb,RB F1 Team,Racing Bulls,2024,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+red_bull,Red Bull,Red Bull Racing,2006,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+renault,Renault,Alpine,2006,2020,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+sauber,Sauber,Audi,2010,2025,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+spyker,Spyker,Aston Martin,2007,2007,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+spyker_mf1,Spyker MF1,Aston Martin,2006,2006,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq | https://f1elo.com/constructors/families,certain
+super_aguri,Super Aguri,Super Aguri,2006,2008,https://en.wikipedia.org/wiki/Super_Aguri_F1,certain
+toro_rosso,Toro Rosso,Racing Bulls,2006,2019,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain
+toyota,Toyota,Toyota,2006,2009,https://en.wikipedia.org/wiki/Toyota_Racing,certain
+virgin,Virgin,Manor,2010,2011,https://www.racefans.net/f1-information/f1-teams/marussia/,certain
+williams,Williams,Williams,2006,2026,https://www.formula1.com/en/latest/article/the-family-tree-f1-11-teams-and-how-they-came-to-be.2QBA1PPMf0bC8mp2xxqZeq.2QBA1PPMf0bC8mp2xxqZeq,certain

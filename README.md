@@ -139,7 +139,7 @@ Included. They spread the field and add noise, which is why season gaps use medi
 - **Design:** compare all 21 seasons, using the rule cycle to explain the differences (replaces the earlier "each reset vs the year before" design, which is now just the years-since-reset = 0 case).
 - **Start year:** 2006. 2005 dropped, since the model no longer needs a year-before baseline.
 - **Wet sessions:** included.
-- **Team renames:** linked into lineages (e.g. BAR to Honda to Brawn to Mercedes; Minardi to Toro Rosso to AlphaTauri to RB/Racing Bulls; Jordan to Midland to Spyker to Force India to Racing Point to Aston Martin).
+- **Team renames:** linked into lineages (e.g. BAR to Honda to Brawn to Mercedes; Minardi to Toro Rosso to AlphaTauri to RB/Racing Bulls; Jordan to Midland to Spyker to Force India to Racing Point to Aston Martin). Every metric uses the lineage, including within a season, since MF1 became Spyker MF1 partway through 2006 and would otherwise count as two teams.
 - **Sprints:** included at 1/3 weight, with a 0-weight robustness check.
 
 ## Plan (about 24 hours)
@@ -169,16 +169,26 @@ Quantitative/
 
 ## How to reproduce
 
-To be filled in as the scripts get built. Expected:
+From the repository root, set up Python once:
 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
-pip install pandas requests matplotlib statsmodels
-python src/01_download.py
+
+The repository snapshot includes the raw JSON pages and the three manually researched CSVs in `data/processed/`. To rebuild the race and driver tables from those inputs:
+
+```bash
+python src/check_download.py
 python src/02_clean.py
-python src/03_metrics.py
-python src/04_model.py
-python src/05_charts.py
 ```
+
+The checker reports round coverage and missing qualifying or winners. The cleaner prints row counts and timing conversion failures, reads `track_layouts.csv` for circuit versions, and writes `races.csv`, `results.csv`, `qualifying.csv`, and `sprint.csv`.
+
+To fetch missing archives, run `python src/01_download.py` before the checker. It defaults to 2006–2026 and reuses cached responses. For a **new** 2026 snapshot, run `python src/01_download.py --seasons 2026 --force`, then repeat the check and clean steps. Refreshing replaces that season’s raw files and updates the manifest.
+
+The team lineage, track layout and wet-session tables are versioned research inputs. Reproduce their use by retaining the CSVs from the same checkout. Audit individual decisions using their source URLs and the definitions in [the data dictionary](data/processed/DATA_DICTIONARY.md). When new rounds arrive, check their weather separately. Missing weather flags represent unverified conditions.
 
 ## Known limitations
 

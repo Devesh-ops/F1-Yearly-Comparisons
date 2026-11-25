@@ -123,3 +123,19 @@ Added the sourced track_layouts.csv and updated src/02_clean.py and DATA_DICTION
 ## 2026-11-24 · GPT · Day 1 review fixes
 
 Updated src/02_clean.py to fill empty 2025 Miami qualifying cells from Claude’s official F1 supplement. Rebuilt data/processed/qualifying.csv with `.venv/bin/python src/02_clean.py`: 45 times added (20 Q1, 15 Q2, 10 Q3), zero conversion failures. Compared every populated raw API segment time with the rebuilt CSV and verified all were preserved. Documented provenance and the five teams without Q1 times at individual rounds in DATA_DICTIONARY.md. Replaced the 2007 Catalunya source in track_layouts.csv with Autosport’s contemporary Spanish GP technical review. Ready for Claude to recheck.
+
+## 2026-11-25 · Claude · Day 1 fixes verified
+
+- 2025 Miami: all 20 drivers now have Q1 times in `qualifying.csv`, matching the official page (e.g. Verstappen 86.870s, Bearman 87.999s). Q2 and Q3 filled where they exist.
+- Catalunya 2007 now cites a contemporary 2007 source.
+- `DATA_DICTIONARY.md` documents the manual supplement and the five team-race cases with no Q1 time.
+- Day 1 is committed and the local branch is in sync with origin/main.
+- **Day 1 closed.** Open items 4 and 5 from the review carry into Day 2.
+
+## 2026-11-25 · Claude · Day 2 method decisions
+
+- Created `DECISIONS.md`: every method decision so far with its reasoning and rejected alternatives. Keep adding to it as decisions are made.
+- **Qualifying method changed:** teams compared in the last session they both ran (not Q1 only). 2006 to 2009 Q3 never used (race fuel). Q1-only and best-across-sessions kept as robustness checks.
+- **Points:** current FIA system for every season. **Weights:** sprints 1/3, 2021 Belgium 1/2 (excluded from race pace, qualifying kept).
+- **Reliability:** no separate metric for now (shows up through points HHI). Revisit later.
+- README method sections updated to match.

@@ -1,6 +1,6 @@
 # How do rule resets shape F1 dominance? Every season from 2006 to 2026
 
-*Status: scoping done, Day 1 next. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress and `AGENTS.md` for how we work.*
+*Status: Day 1 done, Day 2 (metrics) in progress. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress, `DECISIONS.md` for the reasoning behind every method choice, and `AGENTS.md` for how we work.*
 
 ## The question
 
@@ -50,13 +50,13 @@ The budget cap starts in 2021, the last year of the wide-car era. That's useful:
 
 Each race weekend produces three numbers per team. All gaps are in **% of the fastest time**, not seconds, so short and long tracks are comparable.
 
-1. **Qualifying gap:** each team's best **Q1** lap. Q1 is the one session every car runs, and it uses the same knockout format every year from 2006, so it's a like-for-like pure pace measure.
+1. **Qualifying gap:** two teams are compared in the **last qualifying session they both took part in**, using each team's best lap in that session. Teams are ordered by their best qualifying position. Top teams often don't push in Q1, the track gets faster from Q1 to Q3, and comparing within one session handles both. **2006 to 2009: Q3 is never used**, because it was run with race fuel in the refuelling era, so Q2 is the latest comparable session. Full reasoning in `DECISIONS.md`.
 2. **Race pace gap:** each team's fastest lap in the race, from the results data.
 3. **Results:** who won, and points under one fixed points system (below).
 
 From these, every weekend gets:
-- **Field spread:** gap from the fastest team to the median team. How bunched up is the grid?
-- **Dominance margin:** gap from the fastest team to the second-fastest. How far ahead is the leader?
+- **Field spread:** gap from the fastest team to the median team. How bunched up is the grid? (Usually compared in Q2.)
+- **Dominance margin:** gap from the fastest team to the second-fastest. How far ahead is the leader? (Usually compared in Q3.)
 
 ### Step 2. A scorecard for every season
 
@@ -103,16 +103,20 @@ The calendar changes a lot: tracks come and go (Korea, India, Portimao, Las Vega
 4. **One-off tracks** (raced in only 1 or 2 seasons) barely inform the comparison, since there's nothing to compare them with. They stay in the main model, and get dropped in a robustness check.
 5. **Core-tracks check:** rerun using only tracks raced in most seasons (e.g. Monza, Silverstone, Spa, Hungaroring, Suzuka, Montreal, Interlagos). If the answer holds there, track changes aren't driving it.
 
-### Sprint races
+### Sprint races and shortened races
+
+Rule: **a session counts in proportion to the points it awarded.**
 
 Sprints count at **1/3 weight**: a sprint is about a third of a Grand Prix distance and offers about a third of the points (8 for a win vs 25).
+
+**2021 Belgium counts at 1/2 weight** for wins and points, since half points were awarded after two laps behind the safety car. It's left out of race pace (no real racing laps), but its qualifying stays in because that ran in full.
 - A sprint win counts as 1/3 of a win in win HHI.
 - In points HHI, sprints are rescored on 8-7-6-5-4-3-2-1 for every season, including 2021 when the real system was 3-2-1.
 - Sprint qualifying isn't used for the qualifying gap, so that metric means the same in 2006 and 2026.
 
 ### Fixed points system
 
-Every season is rescored with 25-18-15-12-10-8-6-4-2-1 for Grand Prix, no fastest-lap point. The real system changed in 2010, so using actual points would mix that change into the results.
+Every season is rescored with the **current FIA system**: 25-18-15-12-10-8-6-4-2-1 for Grand Prix, 8-7-6-5-4-3-2-1 for sprints, no fastest-lap point. The real system changed over time (top 8 only before 2010, double points at 2014 Abu Dhabi, a fastest-lap point 2019 to 2024), so using actual points would measure changes in the rulebook instead of changes in the racing. Raw `points` from the API are never used.
 
 ### Wet sessions
 
@@ -124,6 +128,7 @@ Included. They spread the field and add noise, which is why season gaps use medi
 - Without one-off tracks, and core tracks only.
 - With a simple time trend added. F1 may have gotten tighter over time for reasons other than rules (reliability, simulation tools), and this checks that the rule-cycle effect isn't just that trend.
 - Qualifying gap vs race pace gap: if both tell the same story, the finding is solid.
+- Qualifying method: last common session (main) vs each team's best time across all sessions vs Q1 only.
 
 ## Data
 
@@ -159,6 +164,7 @@ Quantitative/
   AGENTS.md          how the AIs and Devesh work together
   README.md          this file
   PROJECT_LOG.md     dated progress notes, decisions, review findings
+  DECISIONS.md       every method decision and the reasoning behind it
   data/raw/          untouched API responses
   data/processed/    clean CSVs and the three manual tables
   src/               01_download.py, 02_clean.py, 03_metrics.py, 04_model.py, 05_charts.py

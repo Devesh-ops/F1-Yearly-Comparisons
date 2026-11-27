@@ -19,7 +19,7 @@ Summer 2027 is the recruiting target. From kickoff, aim to finish the project wi
 
 GPT builds, Claude verifies, and Devesh decides. At the end of each step, GPT saves the code it ran, the outputs it produced, and a dated note in `PROJECT_LOG.md` in this project folder. Each note links to the relevant files, records decisions and their rationale, and identifies what is ready for review or awaiting Devesh's decision. Include the commands needed to reproduce the outputs. Either AI should be able to resume from the files alone.
 
-Claude checks the saved work and records what it verified and any discrepancies in the log. GPT addresses findings and regenerates affected outputs. Devesh makes the final call on project direction, consequential analytical choices, and conclusions.
+Claude checks the saved work and records what it verified and any discrepancies in the log. Claude reviews the code itself as well as the outputs: correctness against DECISIONS.md, unnecessary complexity, one-off special cases that belong in data or a general function, and readability for a recruiter reading the repository. GPT addresses findings and regenerates affected outputs. Devesh makes the final call on project direction, consequential analytical choices, and conclusions.
 
 ## Data constraint
 

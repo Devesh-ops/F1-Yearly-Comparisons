@@ -31,12 +31,13 @@ def to_seconds(text, where):
         return None
     minutes, _, secs = text.rpartition(":")
     try:
-        seconds = int(minutes or 0) * 60 + float(secs)
+        seconds = float(secs)
+        total = int(minutes or 0) * 60 + seconds
     except ValueError:
         raise ValueError(f"Unreadable lap time {text!r} ({where})") from None
-    if not 0 < seconds < 1000:  # also rejects 'nan' and 'inf'
+    if not 0 < total < 1000 or (minutes and not 0 <= seconds < 60):  # also rejects nan, inf, 1:99
         raise ValueError(f"Impossible lap time {text!r} ({where})")
-    return f"{seconds:.3f}"
+    return f"{total:.3f}"
 
 
 def saved_races(endpoint, season):

@@ -47,10 +47,10 @@ def rescored_points(season, round_number, session, position_text):
 
     Sprint points aren't weighted again: the sprint table is already smaller.
     """
+    weight = session_weight(season, round_number, session)  # rejects a mistyped session first
     position = str(position_text)
     if not position.isdigit():
         return 0
-    weight = session_weight(season, round_number, session)  # also rejects a mistyped session
     scale = SPRINT_POINTS if session == "sprint" else GP_POINTS
     rank = int(position)
     if not 1 <= rank <= len(scale):

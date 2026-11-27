@@ -52,7 +52,7 @@ def download(url, row_key):
         meta = page["MRData"]
         count = sum(len(race[row_key]) for race in meta["RaceTable"]["Races"])
         total = int(meta["total"]) if total is None else total
-        if int(meta["offset"]) != rows or int(meta["total"]) != total or count == 0:
+        if int(meta["offset"]) != rows or int(meta["total"]) != total or (count == 0 and total > 0):
             raise RuntimeError(f"Unexpected page at offset {rows} of {total}: {url}. Rerun.")
         texts.append(text)
         rows += count
@@ -80,7 +80,9 @@ def main(seasons, force):
             if endpoint == "sprint" and season < 2021:
                 continue  # sprints started in 2021
             path = RAW / f"{endpoint}_{season}.json"
-            if path.exists() and not force:
+            # Skip files already saved, unless --force or the manifest has no record of them
+            # (e.g. a run that stopped between saving the file and updating the manifest).
+            if path.exists() and path.name in manifest and not force:
                 print(f"Already saved: {path.name}")
                 continue
             url = f"{BASE_URL}/{season}/{endpoint}/"

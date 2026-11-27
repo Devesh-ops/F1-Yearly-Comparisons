@@ -168,3 +168,56 @@ Five team-race cases (e.g. Red Bull at 2014 Abu Dhabi, excluded from qualifying)
 **Note (2026-11-25, Claude):** under the best-lap method (2.12) this rule still holds, for a better reason: these are mostly cars whose qualifying was deleted for breaking the rules. Example: Williams at 2024 Netherlands, where Albon's Q1 time is missing but his Q2 and Q3 times are still in the API; his qualifying was deleted for an illegal car, so the team stays out. Keep excluding them.
 
 **Scorecard conventions (2026-11-25):** Count a lineage as starting if at least one GP result survives removal of withdrawals (W, Withdrew) and explicit DNS records. A grid slot of zero alone does not establish a DNS. Count both wet and mixed qualifying flags because each indicates rain affected qualifying. Report best-lap once as the main method alongside Q1 and last-common. The 2023 example in 3.1 uses GP wins alone (9,132.23). Applying the sprint weights in 3.3 gives 8,939.04.
+
+---
+
+## 6. Day 3 model specification (pre-registered 2026-11-27, Devesh and Claude)
+
+Written down before any model was run. Changes after seeing results must be added as new entries with reasons, not edits to this section.
+
+### 6.1 Data
+One row per race (420 races). Outcomes, in percentage points: **field spread** and **dominance margin** from the best-lap qualifying method (2.12). 2026 is provisional (21 of 23 rounds) until the final rerun.
+
+Variables:
+- `ysr`: years since the last reset, categories 0, 1, 2, 3+ (baseline = 0, the reset year). `ysr_num`: the plain number (0 to 4).
+- `cap`: 1 from 2021 (budget cap).
+- `wet`: 1 if the race's qualifying is flagged wet or mixed in `wet_sessions.csv`, any confidence (2.14).
+- `refuel`: 1 for 2006 to 2009, when Q3 isn't used (2.12).
+- `round`: round number within the season.
+- `track`: `track_layout_id`, as fixed effects (4.2).
+
+### 6.2 Estimation
+Multiple linear regression by OLS. Standard errors clustered by season (21 clusters), with t and F tests on G - 1 = 20 degrees of freedom. Races in one season aren't independent, so the effective sample is closer to 21 seasons than 420 races.
+
+### 6.3 Model A (H1, H2): shape of the rule cycle
+`outcome ~ C(ysr, baseline 0) + cap + wet + refuel + round + C(track)`
+
+### 6.4 Model B (H3): does the cap speed up convergence?
+`outcome ~ ysr_num + cap + cap:ysr_num + wet + refuel + round + C(track)`
+A single slope instead of year dummies because only six seasons have the cap (2021 to 2026), too few to split across four cycle years.
+
+### 6.5 Hypotheses (each tested for field spread and for dominance margin)
+| | H0 | H1 (alternative) | Test |
+|---|---|---|---|
+| H1 | β(1) = β(2) = β(3+) = 0 | at least one differs | joint F-test, Model A |
+| H2 | β(1) = 0 | β(1) < 0 (year after a reset is tighter) | one-sided t-test, Model A |
+| H3 | φ = 0 (cap:ysr_num) | φ < 0 (faster tightening under the cap) | one-sided t-test, Model B |
+
+α = 0.05. Six main tests in total, so results are also reported against a Bonferroni threshold of 0.05 / 6 ≈ 0.0083. Conclusions rest on consistency across outcomes and robustness runs, not a single p-value. A non-significant H3 is read as "not enough cap-era data to tell", not "no effect".
+
+### 6.6 Diagnostics
+Residuals vs fitted, Q-Q plot of residuals, VIF for the non-track regressors, Cook's distance (list the 10 most influential races and refit Model A without them as a check).
+
+### 6.7 Rule-adjusted ranking
+Average Model A residual per season = how much more spread out (positive) or closer (negative) the season was than its place in the rule cycle, weather, refuelling era and tracks predict. Seasons ranked on it, for both outcomes.
+
+### 6.8 Outcome side (21 seasons)
+Win HHI and effective number of teams: means by `ysr` category, and a small descriptive OLS `win_hhi ~ ysr_num + cap` (n = 21, robust standard errors). Reported as description, not as a hypothesis test.
+
+### 6.9 Robustness runs (Model A and B re-estimated)
+1. Q1-only outcome. 2. Last-common-session outcome. 3. Race pace outcome. 4. Races with wet qualifying dropped. 5. Core tracks only (layouts with at least 10 races). 6. Layouts with fewer than 3 races dropped. 7. Linear time trend added. 8. Number of teams added (2.15). 9. 2026 dropped (provisional). 10. Ten most influential races dropped.
+For each: β(1), the H1 F-test p-value, and φ with p-values, in one summary table.
+
+### 6.10 Exploratory (not a pre-registered test)
+Model A plus `round × reset-year` interaction: does the field tighten race by race faster in reset seasons? Used to compare 2026 with earlier first years.
+

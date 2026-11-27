@@ -1,134 +1,141 @@
-"""Flatten the project's Jolpica page archives into race and driver tables."""
+"""Turn the raw Jolpica pages into clean race, results, qualifying and sprint tables.
+
+Reads data/raw/, writes four CSVs to data/processed/ and prints a per-season check.
+"""
 
 import csv
 import json
-import re
-from decimal import Decimal
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
-DATA = Path(__file__).resolve().parents[1] / "data"
-RACE = ["season", "round", "race_name", "date", "circuit_id", "circuit_name", "track_layout_id"]
-DRIVER = ["season", "round", "driver", "constructor"]
-RESULT = DRIVER + ["grid", "finishing_position", "position_text", "status", "points", "fastest_lap_seconds"]
-QUALIFYING = DRIVER + ["q1_seconds", "q2_seconds", "q3_seconds"]
-SCHEMAS = {"races": RACE, "results": RESULT, "qualifying": QUALIFYING, "sprint": RESULT}
+ROOT = Path(__file__).resolve().parents[1]
+RAW = ROOT / "data" / "raw"
+PROCESSED = ROOT / "data" / "processed"
+SEASONS = range(2006, 2027)
+
+COLUMNS = {
+    "races": ["season", "round", "race_name", "date", "circuit_id", "circuit_name", "track_layout_id"],
+    "results": ["season", "round", "driver", "constructor", "grid", "finishing_position",
+                "position_text", "status", "points", "fastest_lap_seconds"],
+    "qualifying": ["season", "round", "driver", "constructor", "q1_seconds", "q2_seconds", "q3_seconds"],
+}
+COLUMNS["sprint"] = COLUMNS["results"]
+QUALI_SEGMENTS = {"Q1": "q1_seconds", "Q2": "q2_seconds", "Q3": "q3_seconds"}
 
 
-def seconds(raw, location, failures):
-    if raw is None or raw == "":
+def to_seconds(text):
+    """'1:26.870' or '55.404' -> '86.870' (3 decimals, as in the source). Empty -> None."""
+    if not text:
         return None
-    if re.fullmatch(r"\d+(?:\.\d+)?", str(raw).strip()):
-        return Decimal(str(raw).strip())
-    match = re.fullmatch(r"(\d+):([0-5]\d(?:\.\d+)?)", str(raw).strip())
-    if match:
-        minutes, remainder = match.groups()
-        return int(minutes) * 60 + Decimal(remainder)
-    failures.append(f"{location}: {raw!r}")
-    return None
+    minutes, _, secs = text.rpartition(":")
+    return f"{int(minutes or 0) * 60 + float(secs):.3f}"
 
 
-def read_layout_changes(path):
-    changes = {}
-    with path.open(encoding="utf-8", newline="") as file:
-        for row in csv.DictReader(file):
-            circuit = row["circuit_id"]
-            year = int(row["change_season"])
-            years = changes.setdefault(circuit, set())
-            if year in years:
-                raise ValueError(f"Duplicate layout change: {circuit} {year}")
-            years.add(year)
-    return changes
+def saved_races(endpoint, season):
+    """Every race in a season's saved pages. A race split across two pages appears twice."""
+    for page in json.loads((RAW / f"{endpoint}_{season}.json").read_bytes()):
+        yield from page["MRData"]["RaceTable"]["Races"]
 
 
-def layout_id(circuit, season, round_number, changes):
-    # Sakhir reused the standard GP layout and tried two temporary alternatives.
-    years = changes.get(circuit, set())
-    if circuit == "bahrain":
-        if season == 2010 and season in years:
-            return "bahrain_v2"
-        if (season, round_number) == (2020, 16) and season in years:
-            return "bahrain_v3"
-        years = years - {2010, 2012, 2020}
-    version = 1 + sum(year <= season for year in years)
-    return f"{circuit}_v{version}"
+def layout_id(layouts, circuit, season, round_number):
+    """Look up the layout version in track_layouts.csv. Circuits with no listed change are _v1.
+
+    A row applies from first_season to last_season (blank = still in use), and to every
+    round unless the row names one. If several rows apply, a round-specific row wins,
+    then the most recent change.
+    """
+    matches = [row for row in layouts
+               if row["circuit_id"] == circuit
+               and int(row["first_season"]) <= season <= int(row["last_season"] or 9999)
+               and row["round"] in ("", str(round_number))]
+    if not matches:
+        return f"{circuit}_v1"
+    best = max(matches, key=lambda row: (row["round"] != "", int(row["first_season"])))
+    return best["layout_id"]
 
 
-def fill_miami_times(path, qualifying, failures):
+def driver_row(race, entry, endpoint):
+    """One driver's row in the results, sprint or qualifying table."""
+    row = {"season": int(race["season"]), "round": int(race["round"]),
+           "driver": entry["Driver"]["driverId"], "constructor": entry["Constructor"]["constructorId"]}
+    if endpoint == "qualifying":
+        for segment, column in QUALI_SEGMENTS.items():
+            row[column] = to_seconds(entry.get(segment))
+    else:
+        row.update(grid=entry["grid"], finishing_position=entry["position"],
+                   position_text=entry["positionText"], status=entry["status"], points=entry["points"],
+                   fastest_lap_seconds=to_seconds(entry.get("FastestLap", {}).get("Time", {}).get("time")))
+    return row
+
+
+def apply_manual_qualifying(qualifying):
+    """Fill gaps in the API data from data/raw/manual_qualifying_*.csv.
+
+    Only empty times are filled; a time from the API is never overwritten.
+    Each manual file lists its source URL on every row.
+    """
     filled = 0
-    seen = set()
-    with path.open(encoding="utf-8", newline="") as file:
-        for row in csv.DictReader(file):
-            key = (int(row["season"]), int(row["round"]), row["driver"])
-            if key[:2] != (2025, 6) or key not in qualifying or key in seen:
-                raise ValueError(f"Unexpected manual qualifying key: {key}")
-            seen.add(key)
-            result = list(qualifying[key])
-            if result[3] != row["constructor"]:
-                raise ValueError(f"Constructor mismatch for {key}")
-            for index, segment in enumerate(("Q1", "Q2", "Q3"), start=4):
-                if result[index] is None and row[segment].strip():
-                    result[index] = seconds(row[segment], f"{path.name} {key} {segment}", failures)
-                    filled += int(result[index] is not None)
-            qualifying[key] = tuple(result)
+    for path in sorted(RAW.glob("manual_qualifying_*.csv")):
+        with path.open(encoding="utf-8", newline="") as file:
+            for manual in csv.DictReader(file):
+                key = (int(manual["season"]), int(manual["round"]), manual["driver"])
+                row = qualifying[key]  # KeyError here means a typo in the manual file
+                if row["constructor"] != manual["constructor"]:
+                    raise ValueError(f"Constructor mismatch in {path.name}: {key}")
+                for segment, column in QUALI_SEGMENTS.items():
+                    if row[column] is None and manual[segment]:
+                        row[column] = to_seconds(manual[segment])
+                        filled += 1
     return filled
 
 
 def main():
-    raw_dir = DATA / "raw"
-    out = DATA / "processed"
-    out.mkdir(exist_ok=True)
-    tables = {name: {} for name in SCHEMAS}
-    changes = read_layout_changes(out / "track_layouts.csv")
-    failures = []
-    for season in range(2006, 2027):
-        for name, field in (("results", "Results"), ("qualifying", "QualifyingResults"),
-                            ("sprint", "SprintResults")):
-            if name == "sprint" and season < 2021:
-                continue
-            path = raw_dir / f"{name}_{season}.json"
-            for page in json.loads(path.read_bytes()):
-                for race in page["MRData"]["RaceTable"]["Races"]:
-                    race_key = (int(race["season"]), int(race["round"]))
-                    if name == "results":
-                        circuit = race["Circuit"]
-                        layout = layout_id(circuit["circuitId"], *race_key, changes)
-                        tables["races"][race_key] = (*race_key, race["raceName"], race["date"],
-                                                    circuit["circuitId"], circuit["circuitName"], layout)
-                    for entry in race[field]:
-                        key = (*race_key, entry["Driver"]["driverId"])
-                        if key in tables[name]:
-                            raise ValueError(f"Duplicate driver row in {name}: {key}")
-                        common = (*key, entry["Constructor"]["constructorId"])
-                        location = f"{path.name} round {race_key[1]} driver {key[2]}"
-                        if name == "qualifying":
-                            values = [seconds(entry.get(q), f"{location} {q}", failures)
-                                      for q in ("Q1", "Q2", "Q3")]
-                        else:
-                            lap = entry.get("FastestLap", {}).get("Time", {}).get("time")
-                            values = [entry["grid"], entry["position"], entry["positionText"], entry["status"],
-                                      entry["points"], seconds(lap, f"{location} FastestLap", failures)]
-                        tables[name][key] = (*common, *values)
+    with (PROCESSED / "track_layouts.csv").open(encoding="utf-8", newline="") as file:
+        layouts = list(csv.DictReader(file))
+    tables = {name: {} for name in COLUMNS}
 
-    filled = fill_miami_times(raw_dir / "manual_qualifying_2025_06_miami.csv",
-                              tables["qualifying"], failures)
+    for season in SEASONS:
+        for endpoint, entries in [("results", "Results"), ("qualifying", "QualifyingResults"),
+                                  ("sprint", "SprintResults")]:
+            if endpoint == "sprint" and season < 2021:
+                continue  # sprints started in 2021
+            for race in saved_races(endpoint, season):
+                race_key = (int(race["season"]), int(race["round"]))
+                if endpoint == "results":
+                    circuit = race["Circuit"]["circuitId"]
+                    tables["races"][race_key] = {
+                        "season": race_key[0], "round": race_key[1], "race_name": race["raceName"],
+                        "date": race["date"], "circuit_id": circuit,
+                        "circuit_name": race["Circuit"]["circuitName"],
+                        "track_layout_id": layout_id(layouts, circuit, *race_key)}
+                for entry in race[entries]:
+                    row = driver_row(race, entry, endpoint)
+                    key = (*race_key, row["driver"])
+                    if key in tables[endpoint]:
+                        raise ValueError(f"Duplicate driver row in {endpoint}: {key}")
+                    tables[endpoint][key] = row
 
-    # Finish writing every CSV before replacing any previous output.
-    with TemporaryDirectory(dir=out) as staging:
-        for name, rows in tables.items():
-            with (Path(staging) / f"{name}.csv").open("w", encoding="utf-8", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(SCHEMAS[name])
-                writer.writerows(rows[key] for key in sorted(rows))
-        for path in Path(staging).iterdir():
-            path.replace(out / path.name)
+    filled = apply_manual_qualifying(tables["qualifying"])
 
     for name, rows in tables.items():
+        with (PROCESSED / f"{name}.csv").open("w", encoding="utf-8", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=COLUMNS[name])
+            writer.writeheader()
+            writer.writerows(rows[key] for key in sorted(rows))
         print(f"{name}.csv: {len(rows):,} rows")
-    print(f"Miami 2025 qualifying times filled from manual source: {filled}")
-    print(f"Time conversion failures: {len(failures)}")
-    for failure in failures:
-        print(failure)
+    print(f"Qualifying times filled from manual files: {filled}")
+
+    # Per-season check: races in each table, and exactly one winner per Grand Prix.
+    print("\nSeason  Races  Qualifying  Sprints")
+    for season in SEASONS:
+        counts = [len({key[:2] for key in tables[name] if key[0] == season})
+                  for name in ("results", "qualifying", "sprint")]
+        print(f"{season}  {counts[0]:>5}  {counts[1]:>10}  {counts[2]:>7}")
+    winners = {}
+    for row in tables["results"].values():
+        if row["finishing_position"] == "1":
+            winners[(row["season"], row["round"])] = winners.get((row["season"], row["round"]), 0) + 1
+    problems = [key for key in tables["races"] if winners.get(key) != 1]
+    print(f"Races without exactly one winner: {problems or 'none'}")
 
 
 if __name__ == "__main__":

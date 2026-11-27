@@ -69,7 +69,7 @@ Format for each entry: **decision**, then *why*, then alternatives considered.
 *Why:* Weather is part of racing. Medians limit the effect of any single wet session, and wet sessions are flagged in `wet_sessions.csv` so we can point out if a result leans on them.
 
 ### 2.9 Headline pace measure: not decided yet (2026-11-25, Devesh)
-Devesh will choose between dominance margin and field spread after seeing the Day 2 numbers.
+Devesh will choose between dominance margin and field spread after seeing the Day 2 numbers. Still open on 2026-11-27, to be decided after Day 3. Claude's suggestion: win HHI (outcomes) and dominance margin (pace) shown as a pair, because 2023 (21 of 22 wins, only 0.19% qualifying margin) shows either one alone can mislead. Role of points HHI also open (it only ranges from about 1,600 to 2,300).
 
 ### 2.10 Team order and signed gaps (2026-11-25) · SUPERSEDED by 2.12
 **Decision:** Teams are ordered by the latest *usable* session they reached, then by their time in it (so for 2006 to 2009 the order comes from Q2, not the fuel-affected Q3). Gaps are **signed**: if a lower-ranked team was quicker than the leader in the session used for their comparison, the gap is negative, not clipped to zero.
@@ -106,6 +106,14 @@ Devesh will choose between dominance margin and field spread after seeing the Da
 - Equal best laps get equal percentage gaps. For a stable display order, break ties using the last-common-session rank. When a lineage sets its own best time in multiple sessions, label the earliest eligible session. Neither display choice changes the median or margin.
 - Take the fastest recorded time from either driver. A missing segment supplies no lap. Apply the Q1 eligibility rule in 5.2 to qualifying. For race pace, omit a lineage if neither driver recorded a lap, since there is no observed time to compare. A margin requires two timed lineages.
 - Use unweighted Pearson correlations. For the race comparison, use the same weekends with all four measures available so the coefficients share a sample (419 here). For the largest qualifying disagreements, use all 420 qualifying sessions and rank by absolute difference in percentage points. For season correlations, compute each measure's median on its eligible races first, then pair the 21 seasons so each season contributes once.
+
+### 2.14 Wet-qualifying control in the model (2026-11-27, Devesh)
+**Decision:** Wet and mixed qualifying sessions stay in the data (2.8), and the Day 3 model includes a wet-qualifying indicator as a control. A robustness run drops wet qualifying sessions entirely.
+*Why:* The project measures car competitiveness, not driver skill in the rain. All five races where the qualifying methods disagreed most were wet or mixed sessions: when conditions change between Q1 and Q3, best laps mostly reflect when a team got to run. The control stops weather from being read as a rule-cycle effect.
+
+### 2.15 Number of teams: robustness check, not a control (2026-11-27, Devesh)
+**Decision:** The main model doesn't control for the number of teams (10 to 12). A robustness run adds it.
+*Why:* With more teams the median team sits further down the order (e.g. 12 teams in 2010 to 2012, three of them new and slow), which can widen field spread for reasons unrelated to the rules. Keeping it out of the main model keeps that model simple; the robustness run shows whether it matters.
 
 ## 3. Outcome measures
 

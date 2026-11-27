@@ -1,131 +1,94 @@
-"""Download Jolpica race, qualifying and sprint results, preserving each raw page."""
+"""Download race results, qualifying and sprint results from the Jolpica F1 API.
+
+Each season and endpoint is saved untouched as data/raw/<endpoint>_<season>.json
+(a list of the API's pages), and logged in data/raw/manifest.csv.
+
+Usage:
+    python src/01_download.py                        # all seasons, skip files already saved
+    python src/01_download.py --seasons 2026 --force # re-download 2026
+"""
 
 import argparse
 import csv
 import json
-import sys
 import time
 from datetime import datetime, timezone
-from email.utils import parsedate_to_datetime
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 import requests
 
-BASE = "https://api.jolpi.ca/ergast/f1"
+BASE_URL = "https://api.jolpi.ca/ergast/f1"
 RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
-ROW_KEYS = {"results": "Results", "qualifying": "QualifyingResults", "sprint": "SprintResults"}
-FIELDS = ["file_name", "url", "retrieved_at_utc", "rows"]
-LIMIT = 100
+MANIFEST = RAW / "manifest.csv"
+ENDPOINTS = {"results": "Results", "qualifying": "QualifyingResults", "sprint": "SprintResults"}
+PAGE_SIZE = 100  # the API's maximum rows per request
 
 
-def fetch(session, url, offset):
+def get_page(url, offset):
+    """One page of results. Pauses between requests and retries if the API is busy."""
     for attempt in range(5):
         time.sleep(1)
-        delay = 10 * 2**attempt
         try:
-            response = session.get(url, params={"limit": LIMIT, "offset": offset}, timeout=30)
-            if response.status_code != 429:
+            response = requests.get(url, params={"limit": PAGE_SIZE, "offset": offset}, timeout=30)
+            if response.status_code != 429:  # 429 = too many requests
                 response.raise_for_status()
-                return response.content
-            reason = "HTTP 429"
-            retry_after = response.headers.get("Retry-After")
-            if retry_after:
-                if retry_after.isdigit():
-                    delay = max(delay, int(retry_after))
-                else:
-                    until = parsedate_to_datetime(retry_after)
-                    delay = max(delay, (until - datetime.now(timezone.utc)).total_seconds())
+                return response.json()
         except requests.Timeout:
-            reason = "timeout"
-        if attempt == 4:
-            raise RuntimeError(f"{reason} after five attempts at {url}, offset {offset}")
-        print(f"  {reason} at offset {offset}. Retrying in {delay:.0f}s.", flush=True)
-        time.sleep(delay)
+            pass
+        print(f"  API busy or slow, waiting 30s (attempt {attempt + 1} of 5)")
+        time.sleep(30)
+    raise RuntimeError(f"Gave up on {url} at offset {offset}")
 
 
-def page_counts(page, key, offset, expected):
-    # Pagination counts driver rows inside each race.
-    meta = page["MRData"]
-    total = int(meta["total"])
-    count = sum(len(race[key]) for race in meta["RaceTable"]["Races"])
-    if int(meta["offset"]) != offset or (expected is not None and total != expected):
-        raise ValueError(f"Pagination changed at offset {offset}. Rerun this download.")
-    if count > LIMIT or offset + count > total or (count == 0 and offset < total):
-        raise ValueError(f"Unexpected page size {count} at offset {offset} of {total}")
-    return count, total
+def download(url, row_key):
+    """All pages for one season and endpoint. Returns the pages and the number of driver rows.
+
+    The API pages by driver rows, so one race can be split across two pages.
+    """
+    pages, rows, total = [], 0, None
+    while total is None or rows < total:
+        page = get_page(url, rows)
+        total = int(page["MRData"]["total"])
+        count = sum(len(race[row_key]) for race in page["MRData"]["RaceTable"]["Races"])
+        if count == 0 and rows < total:
+            raise RuntimeError(f"Empty page at offset {rows} of {total}: {url}")
+        pages.append(page)
+        rows += count
+    return pages, rows
 
 
-def download(session, url, key, path):
-    offset, total = 0, None
-    pages = []
-    while total is None or offset < total:
-        body = fetch(session, url, offset)
-        count, total = page_counts(json.loads(body), key, offset, total)
-        pages.append(body)
-        offset += count
-
-    # A JSON array keeps the original bytes of each page, including its metadata.
-    with NamedTemporaryFile(dir=path.parent, delete=False) as tmp:
-        tmp.write(b"[\n" + b",\n".join(pages) + b"\n]\n")
-    Path(tmp.name).replace(path)
-    return total
-
-
-def cached_count(path, key):
-    pages = json.loads(path.read_bytes())
-    if not isinstance(pages, list) or not pages:
-        raise ValueError(f"Invalid page archive: {path.name}. Use --force to refresh.")
-    offset, total = 0, None
-    for page in pages:
-        count, total = page_counts(page, key, offset, total)
-        offset += count
-    if offset != total:
-        raise ValueError(f"Incomplete archive: {path.name}. Use --force to refresh.")
-    return offset
-
-
-def run(seasons, force):
+def main(seasons, force):
     RAW.mkdir(parents=True, exist_ok=True)
-    manifest = RAW / "manifest.csv"
-    records = {}
-    if manifest.exists():
-        with manifest.open(newline="") as source:
-            records = {row["file_name"]: row for row in csv.DictReader(source)}
+    manifest = {}
+    if MANIFEST.exists():
+        with MANIFEST.open(newline="") as file:
+            manifest = {row["file_name"]: row for row in csv.DictReader(file)}
 
-    with requests.Session() as session:
-        for season in sorted(set(seasons)):
-            for endpoint, key in ROW_KEYS.items():
-                if endpoint == "sprint" and season < 2021:
-                    continue
-                path = RAW / f"{endpoint}_{season}.json"
-                url = f"{BASE}/{season}/{endpoint}/"
-                if path.exists() and not force:
-                    rows = cached_count(path, key)
-                    action = "Cached"
-                else:
-                    print(f"Fetching {url}", flush=True)
-                    rows = download(session, url, key, path)
-                    action = "Saved"
+    for season in seasons:
+        for endpoint, row_key in ENDPOINTS.items():
+            if endpoint == "sprint" and season < 2021:
+                continue  # sprints started in 2021
+            path = RAW / f"{endpoint}_{season}.json"
+            if path.exists() and not force:
+                print(f"Already saved: {path.name}")
+                continue
+            url = f"{BASE_URL}/{season}/{endpoint}/"
+            print(f"Downloading {url}")
+            pages, rows = download(url, row_key)
+            path.write_text(json.dumps(pages, indent=1))
+            manifest[path.name] = {"file_name": path.name, "url": url, "rows": rows,
+                                   "retrieved_at_utc": datetime.now(timezone.utc).isoformat()}
+            print(f"Saved {path.name}: {rows} rows")
 
-                # File completion time also recovers a missing manifest entry.
-                stamp = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
-                records[path.name] = dict(zip(FIELDS, (path.name, url, stamp, rows)))
-                with NamedTemporaryFile(mode="w", newline="", dir=RAW, delete=False) as tmp:
-                    writer = csv.DictWriter(tmp, fieldnames=FIELDS)
-                    writer.writeheader()
-                    writer.writerows(records[name] for name in sorted(records))
-                Path(tmp.name).replace(manifest)
-                print(f"{action} {path.name}: {rows} rows", flush=True)
+    with MANIFEST.open("w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=["file_name", "url", "retrieved_at_utc", "rows"])
+        writer.writeheader()
+        writer.writerows(manifest[name] for name in sorted(manifest))
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seasons", nargs="+", type=int, default=range(2006, 2027),
-                        help="Space-separated years (default: 2006 through 2026)")
-    parser.add_argument("--force", action="store_true", help="Refresh existing archives")
+    parser = argparse.ArgumentParser(description="Download F1 data from the Jolpica API.")
+    parser.add_argument("--seasons", nargs="+", type=int, default=list(range(2006, 2027)))
+    parser.add_argument("--force", action="store_true", help="re-download files already saved")
     args = parser.parse_args()
-    try:
-        run(args.seasons, args.force)
-    except (OSError, ValueError, KeyError, RuntimeError) as error:
-        sys.exit(f"Download failed: {error}")
+    main(args.seasons, args.force)

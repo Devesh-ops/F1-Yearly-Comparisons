@@ -209,3 +209,20 @@ Run `.venv/bin/python src/03_metrics.py` and `.venv/bin/python src/04_scorecard.
 - To reproduce from the snapshot, activate the environment and run `python src/02_clean.py`, `python src/03_metrics.py`, then `python src/04_scorecard.py`. For this wrap-up, reran both Day 2 scripts from the processed inputs and verified all eight output files matched their previous checksums.
 - Claude has verified both HHIs and the main qualifying season medians across all 21 seasons. Ready for final review: starter and distinct-winner counts, wet/mixed session counts, the tie and missing-time conventions, and the README commands.
 - Open for Devesh before Day 3: Claude proposed a wet-qualifying control and a sensitivity run excluding flagged sessions. Unflagged weather is unknown. The 2026 snapshot ends at round 21, and the interpretation of the 2009–10 change remains uncertain because the qualifying measurement and team field both changed.
+
+## 2026-11-25 · Claude · Day 2 final review
+
+- Starting lineages, distinct winning lineages and drivers, and wet qualifying counts recomputed for all 21 seasons: all match `season_scorecard.csv`. Spot checks against history: 12 teams in 2010 to 2012, Haas joins in 2016 (11), Cadillac in 2026 (11); 8 different winners in 2012 and 7 in 2024.
+- **Day 2 closed.** Open for Devesh before Day 3: wet-qualifying control and no-wet robustness run; headline measure (suggestion: win HHI and dominance margin as a pair); role of points HHI.
+
+## 2026-11-27 · Claude · Code cleanup (roles swapped for this task: Claude built, GPT to review)
+
+Requested by Devesh after Claude's code review. Done in a scratch copy, then copied in.
+- `02_clean.py`: `fill_miami_times()` replaced by `apply_manual_qualifying()`, which applies any `data/raw/manual_qualifying_*.csv`. Bahrain special cases removed from `layout_id()`: `track_layouts.csv` now has one row per layout version (circuit_id, layout_id, first_season, last_season, round, description, source, confidence) and the function is a plain lookup. Floats instead of Decimal, direct CSV writes, prints races per season and a one-winner-per-race check (replaces `check_download.py`).
+- `03_metrics.py`: best-lap method now uses `lap_summary()` like Q1-only and race pace. Last-common-session method in its own function, labelled as the robustness version. Review printouts moved to new `src/review_checks.py`. `api_points` dropped from `race_outcomes.csv` (only used for the 2008/2023 check, now computed in review_checks.py).
+- `01_download.py`: 131 to 94 lines. Keeps pagination, pause and simple retry, skip-if-exists, --force, --seasons, manifest. Tested offline (paging logic against the saved 2023 pages, skip-if-exists leaves the manifest unchanged); not tested against the live API from Claude's shell (no network access).
+- `common.py`: `HALF_POINTS_RACES` named constant, simpler checks, track_layouts no longer loaded.
+- `check_download.py`: to be removed by Devesh (`git rm`).
+- README "How to reproduce" and DATA_DICTIONARY (track_layouts, manual corrections) updated.
+
+**Verification:** races, results, qualifying and sprint CSVs, race_quali_gaps, team_quali_gaps, race_pace_gaps, pace_comparison.txt, outcome_checks.txt and the scorecard printout are byte-for-byte identical to before. race_outcomes.csv is identical apart from the removed api_points column. season_scorecard.csv differs only in the last digit of a few medians (e.g. 1.134214512805634 vs 1.1342145128056338): the old code gives the same digits in Claude's environment, so this is a pandas/platform difference, not the refactor. Devesh's rerun on his Mac is the final check.

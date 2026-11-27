@@ -51,7 +51,7 @@ Force India and its 2018 successor share a lineage under the operational definit
 
 The track_layout_id column in races.csv identifies the physical GP configuration for circuit comparisons. The first observed configuration is circuit_id followed by _v1. Permanent changes increment the version in the first affected race. Bahrain uses v1 for the standard course, v2 for the 2010 endurance course, and v3 only for the 2020 Sakhir GP. Reuse of the standard course restores v1.
 
-track_layouts.csv records material changes between observed F1 configurations. circuit_id matches races.csv. change_season is the first affected F1 season in this sample, which can follow the construction year. description explains the route change or reversion. source is the supporting URL. confidence is high for clear changes to the timed route and medium for documented reprofiling whose whole-lap importance is less certain. Resurfacing, kerb, barrier, pit-building and DRS changes alone do not qualify. The table does not estimate seconds gained or lost.
+track_layouts.csv has one row per layout version other than the original (_v1). Circuits with no listed change are always _v1. Columns: circuit_id (matches races.csv), layout_id, first_season and last_season (the seasons the version applies to; a blank last_season means still in use), round (blank for every round; set for a one-off variant such as the 2020 Sakhir GP), description, source (supporting URL), confidence (high for clear changes to the timed route, medium for documented reprofiling whose whole-lap importance is less certain). If several rows apply to a race, a round-specific row wins, then the most recent change. Resurfacing, kerb, barrier, pit-building and DRS changes alone do not qualify. The table does not estimate seconds gained or lost.
 
 ## wet_sessions.csv
 
@@ -66,8 +66,8 @@ Manual session-level weather flags through 2026 round 21. Join on season and rou
 | source | Public URL reporting conditions for the indicated event and session |
 | confidence | high indicates direct session evidence for the classification. uncertain indicates a borderline shower, ambiguous effect on running, or unclear wet/dry split. Keep uncertain rows separate in sensitivity checks. |
 
-### Miami 2025 qualifying and Q1 gap coverage
+### Manual qualifying corrections and Q1 gap coverage
 
-For 2025 round 6, the cleaner matches the 20 existing driver rows to `data/raw/manual_qualifying_2025_06_miami.csv` by season, round and driver, checks constructor identity, and fills only missing segment times. Populated API times take precedence. The supplement records the source URL and retrieval date per driver. [Official F1 qualifying results](https://www.formula1.com/en/results/2025/races/1259/miami/qualifying)
+The cleaner applies every `data/raw/manual_qualifying_*.csv` file: it matches rows by season, round and driver, checks the constructor, and fills only missing segment times. So far there is one file, for 2025 round 6 (Miami), where the API had no times. It matches the 20 existing driver rows to `data/raw/manual_qualifying_2025_06_miami.csv`. Populated API times take precedence. The supplement records the source URL and retrieval date per driver. [Official F1 qualifying results](https://www.formula1.com/en/results/2025/races/1259/miami/qualifying)
 
 A team's best valid Q1 time counts even if only one driver recorded a time. A team with no valid Q1 time drops out of that race's qualifying gap calculation. The other teams and the race remain eligible. The current snapshot has five such team-race cases: Ferrari (2006 round 7), HRT (2011 round 6), Red Bull (2014 round 19), and Williams (2024 round 15 and 2025 round 18).

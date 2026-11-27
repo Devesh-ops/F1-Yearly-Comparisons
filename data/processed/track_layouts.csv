@@ -1,16 +1,15 @@
-circuit_id,change_season,description,source,confidence
-"albert_park","2022","Removed the Turns 9–10 chicane and widened several corners.","https://www.fia.com/sites/default/files/gp22_166_media_kit_v2.pdf","high"
-"bahrain","2010","Endurance configuration added a long infield loop for the 2010 GP only.","https://www.lapledger.org/circuits/bahrain","high"
-"bahrain","2012","First GP after 2010 returned to the standard configuration used before 2010.","https://www.lapledger.org/circuits/bahrain","high"
-"bahrain","2020","Outer circuit at round 16 (Sakhir GP) only. Round 15 and subsequent Bahrain GPs used the standard circuit.","https://www.lapledger.org/circuits/bahrain","high"
-"catalunya","2007","Inserted a slow chicane before the final corner.","https://www.autosport.com/general/news/2007-spanish-gp-technical-review-5078272/5078272/","high"
-"catalunya","2021","Replaced the tight Turn 10 hairpin with a wider-radius bend.","https://www.formula1.com/en/latest/article/circuit-de-barcelona-catalunya-complete-remodelling-of-turn-10.giY8HxbKVmtub2ZjyvI1B.giY8HxbKVmtub2ZjyvI1B.giY8HxbKVmtub2ZjyvI1B","high"
-"catalunya","2023","Bypassed the final chicane while retaining the revised Turn 10.","https://www.fia.com/news/fia-homologates-updated-layout-2023-fia-formula-1-spanish-grand-prix","high"
-"imola","2020","First F1 return since 2006 used the straight past the pits after removal of Variante Bassa.","https://www.planetf1.com/news/imola-drs-zone-extended","high"
-"jeddah","2023","Tightened the Turns 22–23 sequence to reduce approach speed. Whole-lap effect is less certain.","https://www.autosport.com/f1/news/jeddah-reveals-f1-track-tweaks-ahead-of-2023-race/10405561/","medium"
-"marina_bay","2013","Replaced the Singapore Sling triple chicane at Turn 10 with a single left turn.","https://singaporegp.sg/en/news/2013/new-formula-for-singapore-sling-at-the-2013-formula-1-singtel-singapore-grand-prix/","high"
-"marina_bay","2015","Realigned Turns 10–13 and switched sides on Anderson Bridge. Whole-lap effect is less certain.","https://www.fia.com/sites/default/files/18.09_-_event_notes_v2.pdf","medium"
-"marina_bay","2023","Replaced Turns 16–19 around the Bay Grandstand with a straight.","https://singaporegp.sg/en/news/2022/2022-updates-to-the-marina-bay-street-circuit/","high"
-"sepang","2016","Reprofiled several corners including adverse camber at the final hairpin. Whole-lap effect is less certain.","https://www.autosport.com/f1/news/malaysian-grand-prix-f1-venue-sepang-features-nine-changed-corners-5033981/5033981/","medium"
-"silverstone","2010","Arena infield section replaced the old route via Bridge and Priory.","https://brdc.co.uk/arena-circuit-will-host-2010-british-grand-prix/","high"
-"yas_marina","2021","Removed the chicane before the hairpin and replaced the marina sequence with a banked left turn.","https://www.formula1.com/en/latest/article/onboard-check-out-the-abu-dhabi-track-changes-for-2021.7ofY0q6TmM7Czj2KoHzmdp","high"
+circuit_id,layout_id,first_season,last_season,round,description,source,confidence
+albert_park,albert_park_v2,2022,,,Removed the Turns 9–10 chicane and widened several corners.,https://www.fia.com/sites/default/files/gp22_166_media_kit_v2.pdf,high
+bahrain,bahrain_v2,2010,2010,,"Endurance configuration with a long infield loop, 2010 GP only. From 2012 the standard layout (bahrain_v1) was used again.",https://www.lapledger.org/circuits/bahrain,high
+bahrain,bahrain_v3,2020,2020,16,"Outer circuit, 2020 Sakhir GP (round 16) only. Round 15 and later Bahrain GPs used the standard layout (bahrain_v1).",https://www.lapledger.org/circuits/bahrain,high
+catalunya,catalunya_v2,2007,2020,,Inserted a slow chicane before the final corner.,https://www.autosport.com/general/news/2007-spanish-gp-technical-review-5078272/5078272/,high
+catalunya,catalunya_v3,2021,2022,,Replaced the tight Turn 10 hairpin with a wider-radius bend.,https://www.formula1.com/en/latest/article/circuit-de-barcelona-catalunya-complete-remodelling-of-turn-10.giY8HxbKVmtub2ZjyvI1B.giY8HxbKVmtub2ZjyvI1B.giY8HxbKVmtub2ZjyvI1B,high
+catalunya,catalunya_v4,2023,,,Bypassed the final chicane while retaining the revised Turn 10.,https://www.fia.com/news/fia-homologates-updated-layout-2023-fia-formula-1-spanish-grand-prix,high
+imola,imola_v2,2020,,,First F1 return since 2006 used the straight past the pits after removal of Variante Bassa.,https://www.planetf1.com/news/imola-drs-zone-extended,high
+jeddah,jeddah_v2,2023,,,Tightened the Turns 22–23 sequence to reduce approach speed. Whole-lap effect is less certain.,https://www.autosport.com/f1/news/jeddah-reveals-f1-track-tweaks-ahead-of-2023-race/10405561/,medium
+marina_bay,marina_bay_v2,2013,2014,,Replaced the Singapore Sling triple chicane at Turn 10 with a single left turn.,https://singaporegp.sg/en/news/2013/new-formula-for-singapore-sling-at-the-2013-formula-1-singtel-singapore-grand-prix/,high
+marina_bay,marina_bay_v3,2015,2022,,Realigned Turns 10–13 and switched sides on Anderson Bridge. Whole-lap effect is less certain.,https://www.fia.com/sites/default/files/18.09_-_event_notes_v2.pdf,medium
+marina_bay,marina_bay_v4,2023,,,Replaced Turns 16–19 around the Bay Grandstand with a straight.,https://singaporegp.sg/en/news/2022/2022-updates-to-the-marina-bay-street-circuit/,high
+sepang,sepang_v2,2016,,,Reprofiled several corners including adverse camber at the final hairpin. Whole-lap effect is less certain.,https://www.autosport.com/f1/news/malaysian-grand-prix-f1-venue-sepang-features-nine-changed-corners-5033981/5033981/,medium
+silverstone,silverstone_v2,2010,,,Arena infield section replaced the old route via Bridge and Priory.,https://brdc.co.uk/arena-circuit-will-host-2010-british-grand-prix/,high
+yas_marina,yas_marina_v2,2021,,,Removed the chicane before the hairpin and replaced the marina sequence with a banked left turn.,https://www.formula1.com/en/latest/article/onboard-check-out-the-abu-dhabi-track-changes-for-2021.7ofY0q6TmM7Czj2KoHzmdp,high

@@ -184,37 +184,16 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-The repository snapshot includes the raw JSON pages and the three manually researched CSVs in `data/processed/`. To rebuild the race and driver tables from those inputs:
+The repository includes the raw API pages (`data/raw/`) and the hand-built tables (`data/processed/team_lineage.csv`, `track_layouts.csv`, `wet_sessions.csv`), so everything can be rebuilt without downloading. Run from the repository root:
 
 ```bash
-python src/check_download.py
-python src/02_clean.py
+python src/02_clean.py        # raw pages -> races, results, qualifying, sprint CSVs, plus a per-season check
+python src/03_metrics.py      # per-race qualifying gaps, race pace gaps and outcomes -> outputs/tables/
+python src/04_scorecard.py > outputs/tables/season_scorecard_printout.txt   # one row per season -> season_scorecard.csv
+python src/review_checks.py   # optional: correlation and points check printouts
 ```
 
-The checker reports round coverage and missing qualifying or winners. The cleaner prints row counts and timing conversion failures, reads `track_layouts.csv` for circuit versions, and writes `races.csv`, `results.csv`, `qualifying.csv`, and `sprint.csv`.
-
-To fetch missing archives, run `python src/01_download.py` before the checker. It defaults to 2006–2026 and reuses cached responses. For a **new** 2026 snapshot, run `python src/01_download.py --seasons 2026 --force`, then repeat the check and clean steps. Refreshing replaces that season’s raw files and updates the manifest.
-
-The team lineage, track layout and wet-session tables are versioned research inputs. Reproduce their use by retaining the CSVs from the same checkout. Audit individual decisions using their source URLs and the definitions in [the data dictionary](data/processed/DATA_DICTIONARY.md). When new rounds arrive, check their weather separately. Missing weather flags represent unverified conditions.
-
-### Rebuild the Day 2 metrics and scorecard
-
-With the virtual environment active, run these commands from the repository root after cleaning. Both scripts import the lineage, scoring and rule-cycle helpers from `src/common.py`.
-
-```bash
-metrics_log=$(mktemp)
-python src/03_metrics.py > "$metrics_log"
-python src/04_scorecard.py | tee outputs/tables/season_scorecard_printout.txt
-```
-
-The metrics script writes four CSVs under `outputs/tables/`: `team_quali_gaps.csv` and `race_quali_gaps.csv` contain qualifying gaps, `race_pace_gaps.csv` contains fastest-race-lap summaries, and `race_outcomes.csv` contains wins and points by lineage and weekend. The scorecard script reads the three race-level files and writes `season_scorecard.csv`. The checked-in snapshot covers 420 qualifying sessions, 419 race-pace weekends and 21 season rows. The 2026 row covers 21 Grands Prix.
-
-To recreate the two saved review extracts from the same metrics run, use the same terminal:
-
-```bash
-sed -n '/^field_spread Pearson/,/^Total weighted wins/p' "$metrics_log" | sed '$d' | sed '$d' > outputs/tables/pace_comparison.txt
-sed -n '/^Total weighted wins/,$p' "$metrics_log" > outputs/tables/outcome_checks.txt
-```
+To refresh data (e.g. after the last race of 2026), download first: `python src/01_download.py --seasons 2026 --force`. Without `--force` it skips files already saved. Then rerun the steps above. Gaps in the API can be filled with a `data/raw/manual_qualifying_<season>_<round>_<race>.csv` file (same columns as the Miami 2025 one); the cleaner picks it up automatically and only fills empty times. Check the weather of any new rounds by hand in `wet_sessions.csv`.
 
 ## Known limitations
 

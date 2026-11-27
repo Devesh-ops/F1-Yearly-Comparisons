@@ -1,0 +1,25 @@
+field_spread: ten largest Cook's distances
+ season  round track_layout_id  wet             race_name  cooks_distance
+   2020     14     istanbul_v1    1    Turkish Grand Prix        0.139121
+   2011     14   marina_bay_v1    0  Singapore Grand Prix        0.036468
+   2010     18   interlagos_v1    1  Brazilian Grand Prix        0.035971
+   2023     12          spa_v1    1    Belgian Grand Prix        0.034101
+   2021      3     portimao_v1    0 Portuguese Grand Prix        0.027137
+   2020     12     portimao_v1    0 Portuguese Grand Prix        0.027137
+   2021     15        sochi_v1    1    Russian Grand Prix        0.017353
+   2013     13   marina_bay_v2    0  Singapore Grand Prix        0.017127
+   2014     14   marina_bay_v2    0  Singapore Grand Prix        0.017127
+   2011      8     valencia_v1    0   European Grand Prix        0.015514
+
+Singleton layouts (excluded from influence ranking)
+ season  round             race_name track_layout_id
+   2006      4 San Marino Grand Prix        imola_v1
+   2006      6    Spanish Grand Prix    catalunya_v1
+   2010      1    Bahrain Grand Prix      bahrain_v2
+   2020      9     Tuscan Grand Prix      mugello_v1
+   2020     16     Sakhir Grand Prix      bahrain_v3
+   2026     14    Spanish Grand Prix      madring_v1
+
+          races  year_1_pp      H1_p
+Original  420.0  -0.154663  0.015299
+Drop ten  410.0  -0.210560  0.003011

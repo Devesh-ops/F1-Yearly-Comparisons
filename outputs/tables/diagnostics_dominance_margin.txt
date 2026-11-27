@@ -1,0 +1,25 @@
+dominance_margin: ten largest Cook's distances
+ season  round track_layout_id  wet                race_name  cooks_distance
+   2006     10 indianapolis_v1    0 United States Grand Prix        0.023846
+   2007      7 indianapolis_v1    0 United States Grand Prix        0.023846
+   2006     14     istanbul_v1    0       Turkish Grand Prix        0.023671
+   2013     16        buddh_v1    0        Indian Grand Prix        0.021846
+   2006     17       suzuka_v1    0      Japanese Grand Prix        0.018163
+   2014     12          spa_v1    1       Belgian Grand Prix        0.017869
+   2017     15       sepang_v2    0     Malaysian Grand Prix        0.017847
+   2015      1  albert_park_v1    0    Australian Grand Prix        0.016730
+   2017     13        monza_v1    1       Italian Grand Prix        0.015635
+   2014      9  silverstone_v2    1       British Grand Prix        0.013108
+
+Singleton layouts (excluded from influence ranking)
+ season  round             race_name track_layout_id
+   2006      4 San Marino Grand Prix        imola_v1
+   2006      6    Spanish Grand Prix    catalunya_v1
+   2010      1    Bahrain Grand Prix      bahrain_v2
+   2020      9     Tuscan Grand Prix      mugello_v1
+   2020     16     Sakhir Grand Prix      bahrain_v3
+   2026     14    Spanish Grand Prix      madring_v1
+
+          races  year_1_pp      H1_p
+Original  420.0  -0.025310  0.914014
+Drop ten  410.0   0.023761  0.987985

@@ -1,0 +1,85 @@
+EXPLORATORY: round-by-reset interaction, field_spread
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:           field_spread   R-squared:                       0.475
+Model:                            OLS   Adj. R-squared:                  0.387
+Method:                 Least Squares   F-statistic:                -2.324e+12
+Date:                Fri, 27 Nov 2026   Prob (F-statistic):               1.00
+Time:                        16:03:00   Log-Likelihood:                -307.76
+No. Observations:                 420   AIC:                             737.5
+Df Residuals:                     359   BIC:                             984.0
+Df Model:                          60                                         
+Covariance Type:              cluster                                         
+===========================================================================================================
+                                              coef    std err          t      P>|t|      [0.025      0.975]
+-----------------------------------------------------------------------------------------------------------
+Intercept                                   2.4503      0.207     11.833      0.000       2.018       2.882
+C(ysr, Treatment(reference='0'))[T.1]      -0.1799      0.189     -0.950      0.353      -0.575       0.215
+C(ysr, Treatment(reference='0'))[T.2]      -0.1561      0.192     -0.813      0.426      -0.557       0.245
+C(ysr, Treatment(reference='0'))[T.3+]     -0.5558      0.184     -3.021      0.007      -0.939      -0.172
+C(track_layout_id)[T.albert_park_v2]       -0.3557      0.243     -1.464      0.159      -0.862       0.151
+C(track_layout_id)[T.americas_v1]          -0.6801      0.238     -2.853      0.010      -1.177      -0.183
+C(track_layout_id)[T.bahrain_v1]           -0.5398      0.189     -2.858      0.010      -0.934      -0.146
+C(track_layout_id)[T.bahrain_v2]           -1.1602      0.206     -5.644      0.000      -1.589      -0.731
+C(track_layout_id)[T.bahrain_v3]           -1.2528      0.190     -6.580      0.000      -1.650      -0.856
+C(track_layout_id)[T.baku_v1]              -0.5875      0.208     -2.824      0.010      -1.021      -0.154
+C(track_layout_id)[T.buddh_v1]             -0.6576      0.257     -2.559      0.019      -1.194      -0.122
+C(track_layout_id)[T.catalunya_v1]         -0.3072      0.249     -1.235      0.231      -0.826       0.212
+C(track_layout_id)[T.catalunya_v2]         -0.1849      0.183     -1.008      0.325      -0.567       0.198
+C(track_layout_id)[T.catalunya_v3]         -0.1409      0.218     -0.648      0.525      -0.595       0.313
+C(track_layout_id)[T.catalunya_v4]         -0.7421      0.236     -3.151      0.005      -1.233      -0.251
+C(track_layout_id)[T.fuji_v1]              -0.4951      0.207     -2.392      0.027      -0.927      -0.063
+C(track_layout_id)[T.hockenheimring_v1]    -0.6878      0.244     -2.815      0.011      -1.197      -0.178
+C(track_layout_id)[T.hungaroring_v1]       -0.4122      0.234     -1.762      0.093      -0.900       0.076
+C(track_layout_id)[T.imola_v1]              0.0189      0.255      0.074      0.942      -0.514       0.552
+C(track_layout_id)[T.imola_v2]             -0.6150      0.198     -3.099      0.006      -1.029      -0.201
+C(track_layout_id)[T.indianapolis_v1]       0.3207      0.450      0.713      0.484      -0.617       1.259
+C(track_layout_id)[T.interlagos_v1]        -0.6246      0.349     -1.787      0.089      -1.354       0.104
+C(track_layout_id)[T.istanbul_v1]          -0.0291      0.515     -0.057      0.955      -1.104       1.046
+C(track_layout_id)[T.jeddah_v1]            -0.6355      0.197     -3.233      0.004      -1.046      -0.225
+C(track_layout_id)[T.jeddah_v2]            -0.5910      0.212     -2.791      0.011      -1.033      -0.149
+C(track_layout_id)[T.losail_v1]            -0.7191      0.236     -3.052      0.006      -1.210      -0.228
+C(track_layout_id)[T.madring_v1]           -0.6630      0.215     -3.083      0.006      -1.112      -0.214
+C(track_layout_id)[T.magny_cours_v1]       -0.4619      0.259     -1.785      0.089      -1.002       0.078
+C(track_layout_id)[T.marina_bay_v1]        -0.5645      0.348     -1.624      0.120      -1.290       0.161
+C(track_layout_id)[T.marina_bay_v2]        -1.0515      0.275     -3.818      0.001      -1.626      -0.477
+C(track_layout_id)[T.marina_bay_v3]        -0.4979      0.228     -2.180      0.041      -0.974      -0.021
+C(track_layout_id)[T.marina_bay_v4]        -1.0187      0.229     -4.440      0.000      -1.497      -0.540
+C(track_layout_id)[T.miami_v1]             -0.6632      0.229     -2.891      0.009      -1.142      -0.185
+C(track_layout_id)[T.monaco_v1]            -0.4529      0.163     -2.777      0.012      -0.793      -0.113
+C(track_layout_id)[T.monza_v1]             -0.6036      0.204     -2.966      0.008      -1.028      -0.179
+C(track_layout_id)[T.mugello_v1]           -0.3515      0.188     -1.870      0.076      -0.744       0.041
+C(track_layout_id)[T.nurburgring_v1]       -0.6539      0.269     -2.428      0.025      -1.215      -0.092
+C(track_layout_id)[T.portimao_v1]          -0.6320      0.387     -1.634      0.118      -1.439       0.175
+C(track_layout_id)[T.red_bull_ring_v1]     -0.4889      0.203     -2.408      0.026      -0.912      -0.065
+C(track_layout_id)[T.ricard_v1]            -0.1127      0.200     -0.564      0.579      -0.529       0.304
+C(track_layout_id)[T.rodriguez_v1]         -0.7136      0.267     -2.676      0.015      -1.270      -0.157
+C(track_layout_id)[T.sepang_v1]            -0.5044      0.266     -1.898      0.072      -1.059       0.050
+C(track_layout_id)[T.sepang_v2]            -0.6622      0.284     -2.334      0.030      -1.254      -0.070
+C(track_layout_id)[T.shanghai_v1]          -0.5427      0.150     -3.621      0.002      -0.855      -0.230
+C(track_layout_id)[T.silverstone_v1]       -0.4576      0.162     -2.824      0.010      -0.796      -0.120
+C(track_layout_id)[T.silverstone_v2]       -0.4365      0.200     -2.186      0.041      -0.853      -0.020
+C(track_layout_id)[T.sochi_v1]             -0.3357      0.295     -1.137      0.269      -0.952       0.280
+C(track_layout_id)[T.spa_v1]               -0.6001      0.253     -2.373      0.028      -1.128      -0.073
+C(track_layout_id)[T.suzuka_v1]            -0.5193      0.209     -2.479      0.022      -0.956      -0.082
+C(track_layout_id)[T.valencia_v1]          -0.9520      0.259     -3.678      0.001      -1.492      -0.412
+C(track_layout_id)[T.vegas_v1]             -0.9577      0.249     -3.848      0.001      -1.477      -0.439
+C(track_layout_id)[T.villeneuve_v1]        -0.3769      0.153     -2.470      0.023      -0.695      -0.059
+C(track_layout_id)[T.yas_marina_v1]        -0.7927      0.219     -3.614      0.002      -1.250      -0.335
+C(track_layout_id)[T.yas_marina_v2]        -0.8850      0.281     -3.153      0.005      -1.471      -0.299
+C(track_layout_id)[T.yeongam_v1]           -0.6139      0.268     -2.292      0.033      -1.173      -0.055
+C(track_layout_id)[T.zandvoort_v1]         -0.4715      0.199     -2.370      0.028      -0.886      -0.056
+cap                                        -0.6205      0.127     -4.883      0.000      -0.886      -0.355
+round:reset                                -0.0024      0.011     -0.230      0.820      -0.024       0.020
+wet                                         0.2432      0.120      2.021      0.057      -0.008       0.494
+refuel                                     -1.0977      0.208     -5.271      0.000      -1.532      -0.663
+round                                       0.0138      0.006      2.450      0.024       0.002       0.025
+==============================================================================
+Omnibus:                      169.151   Durbin-Watson:                   1.686
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             1195.568
+Skew:                           1.552   Prob(JB):                    2.43e-260
+Kurtosis:                      10.660   Cond. No.                         658.
+==============================================================================
+
+Notes:
+[1] Standard Errors are robust to cluster correlation (CRV1)

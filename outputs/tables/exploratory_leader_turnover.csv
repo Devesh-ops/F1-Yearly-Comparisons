@@ -1,0 +1,22 @@
+season,qualifying_sessions,fastest_lineages,sessions_fastest_per_leader,reset_year,changed
+2006,18,Ferrari,11,True,
+2007,17,McLaren,11,False,True
+2008,18,Ferrari,9,False,True
+2009,17,Red Bull Racing,7,True,True
+2010,19,Red Bull Racing,14,False,False
+2011,19,Red Bull Racing,17,False,False
+2012,20,McLaren,9,False,True
+2013,19,Mercedes | Red Bull Racing,9,False,True
+2014,19,Mercedes,17,True,False
+2015,19,Mercedes,17,False,False
+2016,21,Mercedes,20,False,False
+2017,20,Mercedes,15,True,False
+2018,21,Mercedes,11,False,False
+2019,21,Mercedes,10,False,False
+2020,17,Mercedes,15,False,False
+2021,22,Mercedes,11,False,False
+2022,22,Red Bull Racing,11,True,True
+2023,22,Red Bull Racing,13,False,False
+2024,24,Red Bull Racing,9,False,False
+2025,24,McLaren,14,False,True
+2026,21,Mercedes,14,True,True

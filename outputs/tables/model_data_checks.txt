@@ -1,0 +1,22 @@
+Races: 420
+
+Races by years since reset
+ysr
+0     117
+1      98
+2     103
+3+    102
+
+Races with indicator equal to 1
+cap       135
+wet        61
+refuel     70
+
+Model A predictor VIFs (including layout effects in the design)
+ysr_1    1.5366
+ysr_2    1.5492
+ysr_3+   1.6783
+cap      1.7781
+wet      1.2068
+refuel   1.5996
+round    5.9443

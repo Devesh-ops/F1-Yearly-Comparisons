@@ -1,6 +1,6 @@
 # How do rule resets shape F1 dominance? Every season from 2006 to 2026
 
-*Status: Day 2 complete through the season scorecard. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress, `DECISIONS.md` for the reasoning behind every method choice, and `AGENTS.md` for how we work.*
+*Status: Day 3 models and charts complete. The 2026 snapshot covers 21 rounds. Kickoff 2026-11-24. See `PROJECT_LOG.md` for progress, `DECISIONS.md` for the reasoning behind every method choice, and `AGENTS.md` for how we work.*
 
 ## The question
 
@@ -27,8 +27,8 @@ How it maps to target roles:
 
 ## Hypotheses
 
-- **H1:** The field is most spread out in reset years and tightens each year into a rule cycle.
-- **H2:** The year after a reset is when teams respond: dominance shrinks as rivals copy the leader's concept.
+- **H1:** How spread out the field is changes over a rule cycle. Our expectation is that it's widest in reset years and tightens after; the formal test only checks that the cycle years differ, and the direction is read from the coefficients (DECISIONS.md 6.11).
+- **H2:** The year after a reset is tighter than the reset year. One likely reason is rivals copying the leader's concept, but the data can't test the reason, only the gap.
 - **H3:** Tightening is faster with the budget cap (2021 on) than without it.
 
 ## The rule eras
@@ -168,7 +168,14 @@ Quantitative/
   DECISIONS.md       every method decision and the reasoning behind it
   data/raw/          untouched API responses
   data/processed/    clean CSVs and the three manual tables
-  src/               01_download.py, 02_clean.py, 03_metrics.py, 04_model.py, 05_charts.py
+  src/01_download.py   download raw API pages
+      02_clean.py      clean the saved pages
+      common.py        shared lineage, scoring and season rules
+      03_metrics.py    race-level metrics
+      04_scorecard.py  season scorecards
+      review_checks.py pace and scoring review printouts
+      05_model.py      models, diagnostics, rankings and sensitivity checks
+      06_charts.py     seven analysis figures
   outputs/tables/
   outputs/charts/
   report/            the 2 to 4 page write-up
@@ -191,9 +198,21 @@ python src/02_clean.py        # raw pages -> races, results, qualifying, sprint 
 python src/03_metrics.py      # per-race qualifying gaps, race pace gaps and outcomes -> outputs/tables/
 python src/04_scorecard.py > outputs/tables/season_scorecard_printout.txt   # one row per season -> season_scorecard.csv
 python src/review_checks.py   # optional: correlation and points check printouts
+python src/05_model.py        # fits, diagnostics, rankings, robustness and exploratory results
+python src/06_charts.py       # seven figures from the Day 2 and Day 3 tables
 ```
 
 To refresh data (e.g. after the last race of 2026), download first: `python src/01_download.py --seasons 2026 --force`. Without `--force` it skips files already saved. Then rerun the steps above. Gaps in the API can be filled with a `data/raw/manual_qualifying_<season>_<round>_<race>.csv` file (same columns as the Miami 2025 one); the cleaner picks it up automatically and only fills empty times. Check the weather of any new rounds by hand in `wet_sessions.csv`.
+
+## Results so far
+
+The analysis covers 420 qualifying weekends across 21 seasons. Field spread measures the median team's percentage gap to the fastest team. Dominance margin measures the second-fastest team's gap. The six pre-registered tests use season-clustered standard errors and a Bonferroni threshold of 0.0083.
+
+- **H1 · Differences across the rule cycle.** Field spread varied by cycle year at the 5% level (joint p = 0.0153), short of the adjusted threshold. By year 3+ the estimated midfield gap was 0.53 percentage points smaller than in reset years. The pattern was uneven across earlier years. Evidence was weaker for Q1-only and fastest-race-lap measures. The front-two gap showed little evidence of cycle differences (p = 0.914).
+- **H2 · The first year after a reset.** Both estimated gaps narrowed, but the one-sided tests were inconclusive for field spread (p = 0.125) and dominance margin (p = 0.389).
+- **H3 · Faster tightening under the budget cap.** Neither one-sided test supported faster tightening (field spread p = 0.786, dominance margin p = 0.858). Only six seasons fall in the cap era, including provisional 2026.
+
+See the [main and sensitivity results](outputs/tables/robustness.csv) and the [qualifying timeline](outputs/charts/qualifying_timeline.png). The qualifying measure changes in 2010 when Q3 laps become eligible.
 
 ## Known limitations
 

@@ -271,3 +271,64 @@ Reviewed the six requested files at commit `1a1e042`. Exported `git archive HEAD
 - `AGENTS.md`: Claude now reviews code as well as outputs (Devesh's request).
 - **`DECISIONS.md` section 6: pre-registered Day 3 model spec** (data, OLS with season-clustered errors, Models A and B, hypotheses H1 to H3 with α and Bonferroni threshold, diagnostics, rule-adjusted ranking, outcome side, ten robustness runs, one exploratory model).
 - Roles back to normal from Day 3: GPT builds, Claude reviews code and outputs.
+
+## 2026-11-27 · GPT · Day 3 analysis table and predictor checks
+
+Run `.venv/bin/python src/05_model.py > outputs/tables/model_data_checks.txt` to rebuild [model_data.csv](outputs/tables/model_data.csv) and the [printed checks](outputs/tables/model_data_checks.txt). Verified all 420 keys against the race calendar. Only the two race-pace cells for Belgium 2021 are missing. Section 6.11 approval was confirmed by Devesh before fitting and its heading updated. Claude can check qualifying lineage counts, the wet/mixed flag and the seven VIFs computed with an intercept and layout fixed effects. No outcome model was fitted.
+
+## 2026-11-27 · GPT · Model A main fits
+
+Run `.venv/bin/python src/05_model.py`. Both [field spread](outputs/tables/model_A_field_spread.txt) and [dominance margin](outputs/tables/model_A_dominance_margin.txt) summaries include the coefficient table and registered tests. Each fit uses 420 weekends and 21 season clusters. H1 uses F(3,20), H2 the lower tail of t(20). Field-spread H1 passes 5% only (p = 0.01530). The other three tests pass neither threshold. Claude can review the year-0 contrast, cluster correction, confidence limits and test directions. Statsmodels warns about the omnibus test of all 59 slopes with covariance rank 20; the three H1 restrictions have full rank. Coefficient-level threshold labels are descriptive; the six-test correction applies to the registered hypotheses.
+
+## 2026-11-27 · Claude · Prompts 1 and 2 review (model data and Model A)
+
+- **Model A independently re-estimated** with Claude's own OLS and cluster-robust (CR1, by season) calculation in numpy, not statsmodels: every coefficient, standard error, p-value, the H1 F-tests (4.426, p = 0.0153; 0.172, p = 0.914) and H2 one-sided p-values (0.1254; 0.389) match GPT to 4 decimals.
+- `model_data.csv` rebuilt checks: field spread matches race_quali_gaps.csv, ysr, cap and refuel match the season rules, counts match (117/98/103/102; cap 135, wet 61, refuel 70).
+- **Code review (05_model.py):** clean and readable. One change requested: drop the "threshold passed" labels from the coefficient tables and keep them only on the six pre-registered tests, so a reader doesn't take "both" on a control as a Bonferroni-corrected result. Round's VIF of 5.9 is expected (tracks sit in similar calendar slots) and harmless for a control.
+- **Interpretation notes for the write-up:** (1) field spread: direction matches H1 (all cycle years negative) but not steady tightening: small in years 1 and 2, about 0.53 pp by year 3+ (typical field spread about 1.4%). H2 not supported. (2) Dominance margin: no cycle effect at all (F p = 0.91). (3) The cap coefficient is an era difference from 2021 on and can't be separated from other changes around then (2022 rules, aero testing limits, general trend); robustness run 7 (time trend) and Model B are the key checks before saying anything about the cap. (4) Refuelling-era coefficient is largely the measurement difference it was added to absorb.
+
+## 2026-11-27 · GPT · Model B and Model A diagnostics
+
+Run `.venv/bin/python src/05_model.py` to rebuild both models, the two diagnostic PNGs in outputs/charts and both diagnostic race lists/refits in outputs/tables. Threshold labels now appear only on registered tests. Model B cap-era slopes add the cycle slope and interaction, with covariance included in the interval. H3 lower-tail p-values are 0.78551 for midfield spread and 0.85802 for the front margin. Each influence ranking excludes the six singleton layouts before choosing ten races. After exclusion the field-spread H1 p-value moves from 0.01530 to 0.00301; dominance margin stays inconclusive. Both residual plots show heavy upper tails, with particularly uneven residual variance for dominance margin. Claude can review the race lists, the 410-race refits and the 20-df tests.
+
+## 2026-11-27 · Claude · Prompts 3 and 4 review (Model B, diagnostics)
+
+- **Model B independently re-estimated** (own numpy OLS and CR1 clustered errors): slopes, cap terms, interactions, standard errors, H3 t-statistics (0.807, 1.101), one-sided p-values (0.7855, 0.858) and the cap-era slope CIs all match GPT.
+- **Cook's distance recomputed independently:** same top races (Turkey 2020 field spread 0.139, then Singapore 2011, Brazil 2010, Belgium 2023, Portugal 2020). Singleton layouts correctly excluded. Two-race layouts (Portimao 2020/21, Marina Bay v2 2013/14) show identical pairs, which is expected: their fixed effect sits exactly between the two races.
+- **Code review:** `clustered_fit`, `coefficient_table` and `cycle_test` remove the duplication between Models A and B. Threshold labels now only on H1 to H3, as requested. No changes needed.
+- **Diagnostics read:** field spread residuals look fine apart from three large positive outliers (all chaotic qualifying sessions). Dominance margin residuals are right-skewed and fan out as the fitted gap grows (the gap can't go below zero). Season-clustered errors already allow for unequal variance, and the dominance results are null anyway, so no change to the registered model. Not adding a log-scale run: it wasn't pre-registered and wouldn't change a null result.
+- **Interpretation notes:** H3 not supported for either outcome, and the point estimates go the other way (slower tightening under the cap). The cap era starts much tighter (field spread -0.74 pp in a reset year) and has less room left to close; that's an interpretation, not something the model tests. Only six cap seasons and two cap-era resets. Dropping the ten most influential races makes the H1 field-spread result stronger (p 0.015 to 0.003), a good sign for it.
+
+## 2026-11-27 · GPT · Rankings, outcome analysis, robustness and exploratory fits
+
+Ran `.venv/bin/python src/05_model.py`. Review [season ranks](outputs/tables/rule_adjusted_ranking.csv), [season outcomes](outputs/tables/outcome_side.txt), [all 22 robustness rows](outputs/tables/robustness.csv), and the two exploratory summaries in outputs/tables. Each outcome uses its own full Model A residuals and ten influential races. The wet-excluded fit omits the constant-zero wet column. The descriptive HC3 regression uses 21 seasons; the GP-only HHI retains both half-weight wins. Field-spread H1 crosses 0.05 in eight of ten sensitivity runs, including three below 0.05/6. Q1-only and race pace fall above 0.05. H2 and H3 remain inconclusive throughout. The exploratory interaction pools reset years, including provisional 2026.
+
+## 2026-11-27 · Claude · Prompts 5 and 6 review (ranking, outcome side, robustness)
+
+- **Independently re-estimated** (own numpy OLS and clustered errors): linear-trend run H1 p (0.0131 field spread, 0.9085 dominance), drop-wet run H1 p (0.0173, 0.9939) and the rule-adjusted season ranking (2011 most spread out +0.518, 2012 closest -0.405; dominance 2015 +0.231, 2018 -0.191) all match GPT.
+- **Sanity check against F1 history:** the ranking makes sense. 2012 (seven different winners in the first seven races) is the closest field relative to its place in the cycle; 2015 (Mercedes' biggest one-lap advantage) the most dominant front.
+- **New finding from the trend run (not in GPT's table):** with a linear time trend added, the trend itself is about zero (field spread -0.0035 pp/year, p = 0.90). The cap-era coefficient for field spread survives (-0.59 pp, p = 0.034, standard error doubles); for dominance margin it doesn't (-0.19 pp, p = 0.14). So the cap-era tightening of the midfield isn't just a general trend, but the front-gap result is fragile.
+- **Code review:** clean. One request: add Model A's cap coefficient and its p-value to `robustness.csv`, since "is the cap effect just a time trend?" is a key question and the table doesn't show it.
+- **Robustness read:** field-spread H1 holds (p < 0.05) in 8 of 10 runs and passes Bonferroni in 3. The two failures are Q1-only (p = 0.055) and race pace (p = 0.66), the two measures already known to be noisy (sandbagging in Q1, strategy and tyres in race laps). Dominance-margin H1, H2 and H3 are null everywhere.
+- **Recommendation to Devesh:** keep the registered hypotheses as they are (changing them after seeing results would undo the pre-registration). Any new question goes in as clearly labelled exploratory work.
+
+## 2026-11-27 · GPT · Cap sensitivity, exploratory leader turnover and seven charts
+
+Run `.venv/bin/python src/05_model.py` then `.venv/bin/python src/06_charts.py`. Verified all original robustness cells exactly against a pre-run copy and compared all earlier outputs (only summary timestamps changed outside the expanded robustness table). The table now includes Model A cap estimates and two-sided p-values plus clustered CI endpoints for the robustness figure. Adding a linear season trend gives cap estimates of −0.593 pp for spread (p = 0.0335) and −0.188 pp for margin (p = 0.1379). Post-hoc decision 6.12 handles co-leaders: turnover is 3/5 entering reset years and 5/15 otherwise. Seven PNGs in outputs/charts are ready for review. Model B predictions use the same observed race mix in both eras, and the round comparison labels how many earlier reset seasons contribute. The 2026 sample is provisional.
+
+## 2026-11-27 · Claude · Prompt 7 review (charts, cap in robustness, leader turnover)
+
+- **Cap with time trend:** GPT's numbers match Claude's independent run (field spread -0.593 pp, p = 0.0335; dominance margin -0.188 pp, p = 0.1379).
+- **Leader turnover (exploratory) checked against the table:** 3 of 5 reset transitions vs 5 of 15 other transitions, as reported. Worth stating in the write-up: 2014 doesn't count as a change because Mercedes and Red Bull shared qualifying leadership in 2013 (9 fastest sessions each), even though the championship switched. The method measures one-lap speed, not titles.
+- **Code review (06_charts.py):** readable; reuses `clustered_fit` from 05_model.py instead of duplicating model code. Model B prediction lines are standardized to the same race mix with the full clustered covariance, which is the right way to draw them. No code problems.
+- **Chart fixes requested:**
+  1. `qualifying_timeline.png`: mark 2006 to 2009 as "Q3 not used (race fuel)" so the 2009 to 2010 jump isn't read as a real change; move the legend so it doesn't sit on the lines.
+  2. `robustness_intervals.png`: the legend covers the "main" row in the right panel; move it outside the plot.
+  3. `reset_year_rounds.png`: round numbers are different tracks in different years, so single rounds are noisy (e.g. 2026 round 13). Use a 3-round rolling mean for both lines, add a note that rounds aren't the same tracks across years, and label the chart exploratory.
+- Charts 2 to 5 are fine as they are: honest axes (HHI on the full 0 to 10,000 scale, gaps from 0), clear labels, 2026 marked provisional.
+
+## 2026-11-27 · GPT · Day 3 wrap-up and chart review fixes
+
+- Reproduced the figures with `.venv/bin/python src/06_charts.py`. Compared SHA-256 inventories before and after: all 22 files in outputs/tables matched byte for byte. Exactly three PNGs changed.
+- Ready for Claude’s final visual review: [qualifying timeline](outputs/charts/qualifying_timeline.png) marks the 2006–09 Q3 rule and moves the legend above the plot; [robustness intervals](outputs/charts/robustness_intervals.png) places the legend outside the panels; [exploratory round comparison](outputs/charts/reset_year_rounds.png) uses centred three-round means and explains the varying tracks. Both series omit endpoints without a full window (decision 6.13).
+- The README now lists the numbered scripts, reproduction commands and H1–H3 outcomes. Review the results wording alongside the six registered tests. Only field-spread H1 reaches nominal 5%; none reaches the six-test threshold. The 2026 results remain provisional through round 21.

@@ -221,3 +221,18 @@ For each: β(1), the H1 F-test p-value, and φ with p-values, in one summary tab
 ### 6.10 Exploratory (not a pre-registered test)
 Model A plus `round × reset-year` interaction: does the field tighten race by race faster in reset seasons? Used to compare 2026 with earlier first years.
 
+### 6.11 Clarifications before fitting (2026-11-27, raised by GPT, agreed by Claude, **approved by Devesh**)
+Added before any model was run, so they're part of the pre-registration.
+1. **Direction of H1.** The F-test only shows that cycle years differ from the reset year. Whether the pattern matches "widest at reset, tighter after" is read from the coefficients and reported separately (are β(1), β(2), β(3+) negative, and do they get more negative?). Not an extra test. H2 shows a smaller year-1 gap; it can't show why (e.g. copying).
+2. **Influential races (6.6, 6.9 run 10).** Layouts raced only once (e.g. Mugello, Bahrain 2010) are fitted exactly by their fixed effect, so their Cook's distance is undefined. They're listed separately and left to robustness run 6. The ten largest finite Cook's distances are taken from Model A for each outcome, and that outcome's Model A and Model B both drop the same races.
+3. **Labels.** `wet = 0` means "no wet or mixed flag on record", not "confirmed dry". Robustness run 8 uses the number of lineages with a valid qualifying time (`n_teams` in race_quali_gaps.csv), since that's the set the median is taken over.
+4. **Outcome side (6.8).** The 21-season HHI regression uses HC3 robust standard errors (the small-sample version). The zero-sprint-weight check from 3.3 is reported here: win HHI recomputed with sprints at weight 0, next to the main version.
+
+
+### 6.12 Exploratory qualifying leader turnover (post-hoc, 2026-11-27)
+
+Requested after the main fits. Count each lineage's weekends with the fastest eligible qualifying lap under 2.12, giving equal fastest laps credit. Retain every season co-leader to avoid an arbitrary tie-break. Define turnover as having no co-leader in common with the previous year, and classify the transition by the incoming season. Exclude 2006 from transition denominators because 2005 is outside the sample. Include provisional 2026 and show its status. The comparison is descriptive.
+
+### 6.13 Exploratory reset-year chart smoothing (post-hoc display choice, 2026-11-27)
+
+At Devesh’s request, plot centred three-round means for 2026 and the earlier reset-year comparison. First average the available earlier seasons at each round, then give each of the three round means equal weight. Use only complete windows on each line so that an endpoint never represents fewer rounds. A round can correspond to different circuits across seasons, and fewer earlier seasons contribute late in the calendar. This display rule applies only to the chart.

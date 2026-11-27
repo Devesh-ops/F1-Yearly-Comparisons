@@ -37,6 +37,8 @@ def session_weight(season, round_number, session):
     """How much a win counts: Grand Prix 1, half-points race 1/2, sprint 1/3."""
     if session == "sprint":
         return 1 / 3
+    if session != "race":
+        raise ValueError(f"Session must be 'race' or 'sprint', not {session!r}")
     return 0.5 if (season, round_number) in HALF_POINTS_RACES else 1
 
 
@@ -48,13 +50,14 @@ def rescored_points(season, round_number, session, position_text):
     position = str(position_text)
     if not position.isdigit():
         return 0
+    weight = session_weight(season, round_number, session)  # also rejects a mistyped session
     scale = SPRINT_POINTS if session == "sprint" else GP_POINTS
     rank = int(position)
-    if rank > len(scale):
+    if not 1 <= rank <= len(scale):
         return 0
     if session == "sprint":
         return scale[rank - 1]
-    return scale[rank - 1] * session_weight(season, round_number, session)
+    return scale[rank - 1] * weight
 
 
 def season_tags():

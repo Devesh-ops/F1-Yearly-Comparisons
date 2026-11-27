@@ -1,7 +1,7 @@
 """Download race results, qualifying and sprint results from the Jolpica F1 API.
 
 Each season and endpoint is saved untouched as data/raw/<endpoint>_<season>.json
-(a list of the API's pages), and logged in data/raw/manifest.csv.
+(a list of the API's pages, kept exactly as received), and logged in data/raw/manifest.csv.
 
 Usage:
     python src/01_download.py                        # all seasons, skip files already saved
@@ -25,14 +25,14 @@ PAGE_SIZE = 100  # the API's maximum rows per request
 
 
 def get_page(url, offset):
-    """One page of results. Pauses between requests and retries if the API is busy."""
+    """One page of results as (parsed JSON, original text). Pauses between requests and retries if busy."""
     for attempt in range(5):
         time.sleep(1)
         try:
             response = requests.get(url, params={"limit": PAGE_SIZE, "offset": offset}, timeout=30)
             if response.status_code != 429:  # 429 = too many requests
                 response.raise_for_status()
-                return response.json()
+                return response.json(), response.text
         except requests.Timeout:
             pass
         print(f"  API busy or slow, waiting 30s (attempt {attempt + 1} of 5)")
@@ -41,20 +41,31 @@ def get_page(url, offset):
 
 
 def download(url, row_key):
-    """All pages for one season and endpoint. Returns the pages and the number of driver rows.
+    """All pages for one season and endpoint. Returns the original page texts and the row count.
 
-    The API pages by driver rows, so one race can be split across two pages.
+    The API pages by driver rows, so one race can be split across two pages. If the data
+    changes while downloading (offset or total shifts), stop rather than save a mixed archive.
     """
-    pages, rows, total = [], 0, None
+    texts, rows, total = [], 0, None
     while total is None or rows < total:
-        page = get_page(url, rows)
-        total = int(page["MRData"]["total"])
-        count = sum(len(race[row_key]) for race in page["MRData"]["RaceTable"]["Races"])
-        if count == 0 and rows < total:
-            raise RuntimeError(f"Empty page at offset {rows} of {total}: {url}")
-        pages.append(page)
+        page, text = get_page(url, rows)
+        meta = page["MRData"]
+        count = sum(len(race[row_key]) for race in meta["RaceTable"]["Races"])
+        total = int(meta["total"]) if total is None else total
+        if int(meta["offset"]) != rows or int(meta["total"]) != total or count == 0:
+            raise RuntimeError(f"Unexpected page at offset {rows} of {total}: {url}. Rerun.")
+        texts.append(text)
         rows += count
-    return pages, rows
+    if rows != total:
+        raise RuntimeError(f"Got {rows} rows, expected {total}: {url}. Rerun.")
+    return texts, rows
+
+
+def save_manifest(manifest):
+    with MANIFEST.open("w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=["file_name", "url", "retrieved_at_utc", "rows"])
+        writer.writeheader()
+        writer.writerows(manifest[name] for name in sorted(manifest))
 
 
 def main(seasons, force):
@@ -74,16 +85,16 @@ def main(seasons, force):
                 continue
             url = f"{BASE_URL}/{season}/{endpoint}/"
             print(f"Downloading {url}")
-            pages, rows = download(url, row_key)
-            path.write_text(json.dumps(pages, indent=1))
+            texts, rows = download(url, row_key)
+            # Keep the API's original text. Write to a temporary file first, so an
+            # interrupted run never leaves a half-written archive behind.
+            temporary = path.with_suffix(".tmp")
+            temporary.write_text("[\n" + ",\n".join(texts) + "\n]\n")
+            temporary.replace(path)
             manifest[path.name] = {"file_name": path.name, "url": url, "rows": rows,
                                    "retrieved_at_utc": datetime.now(timezone.utc).isoformat()}
+            save_manifest(manifest)  # after every file, so the manifest always matches the data
             print(f"Saved {path.name}: {rows} rows")
-
-    with MANIFEST.open("w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=["file_name", "url", "retrieved_at_utc", "rows"])
-        writer.writeheader()
-        writer.writerows(manifest[name] for name in sorted(manifest))
 
 
 if __name__ == "__main__":

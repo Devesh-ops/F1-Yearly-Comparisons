@@ -22,12 +22,21 @@ COLUMNS["sprint"] = COLUMNS["results"]
 QUALI_SEGMENTS = {"Q1": "q1_seconds", "Q2": "q2_seconds", "Q3": "q3_seconds"}
 
 
-def to_seconds(text):
-    """'1:26.870' or '55.404' -> '86.870' (3 decimals, as in the source). Empty -> None."""
+def to_seconds(text, where):
+    """'1:26.870' or '55.404' -> '86.870' (3 decimals, as in the source). Empty -> None.
+
+    `where` names the race, driver and session, so a bad value can be found.
+    """
     if not text:
         return None
     minutes, _, secs = text.rpartition(":")
-    return f"{int(minutes or 0) * 60 + float(secs):.3f}"
+    try:
+        seconds = int(minutes or 0) * 60 + float(secs)
+    except ValueError:
+        raise ValueError(f"Unreadable lap time {text!r} ({where})") from None
+    if not 0 < seconds < 1000:  # also rejects 'nan' and 'inf'
+        raise ValueError(f"Impossible lap time {text!r} ({where})")
+    return f"{seconds:.3f}"
 
 
 def saved_races(endpoint, season):
@@ -57,13 +66,15 @@ def driver_row(race, entry, endpoint):
     """One driver's row in the results, sprint or qualifying table."""
     row = {"season": int(race["season"]), "round": int(race["round"]),
            "driver": entry["Driver"]["driverId"], "constructor": entry["Constructor"]["constructorId"]}
+    where = f"{endpoint} {row['season']} round {row['round']} {row['driver']}"
     if endpoint == "qualifying":
         for segment, column in QUALI_SEGMENTS.items():
-            row[column] = to_seconds(entry.get(segment))
+            row[column] = to_seconds(entry.get(segment), f"{where} {segment}")
     else:
         row.update(grid=entry["grid"], finishing_position=entry["position"],
                    position_text=entry["positionText"], status=entry["status"], points=entry["points"],
-                   fastest_lap_seconds=to_seconds(entry.get("FastestLap", {}).get("Time", {}).get("time")))
+                   fastest_lap_seconds=to_seconds(entry.get("FastestLap", {}).get("Time", {}).get("time"),
+                                                  f"{where} fastest lap"))
     return row
 
 
@@ -83,7 +94,7 @@ def apply_manual_qualifying(qualifying):
                     raise ValueError(f"Constructor mismatch in {path.name}: {key}")
                 for segment, column in QUALI_SEGMENTS.items():
                     if row[column] is None and manual[segment]:
-                        row[column] = to_seconds(manual[segment])
+                        row[column] = to_seconds(manual[segment], f"{path.name} {key} {segment}")
                         filled += 1
     return filled
 
@@ -124,19 +135,22 @@ def main():
         print(f"{name}.csv: {len(rows):,} rows")
     print(f"Qualifying times filled from manual files: {filled}")
 
-    # Per-season check: races in each table, and exactly one winner per Grand Prix.
+    # Per-season check: races in each table, every race has qualifying, one classified winner each.
     print("\nSeason  Races  Qualifying  Sprints")
     for season in SEASONS:
         counts = [len({key[:2] for key in tables[name] if key[0] == season})
                   for name in ("results", "qualifying", "sprint")]
         print(f"{season}  {counts[0]:>5}  {counts[1]:>10}  {counts[2]:>7}")
+    qualified = {key[:2] for key in tables["qualifying"]}
+    no_qualifying = sorted(key for key in tables["races"] if key not in qualified)
+    print(f"Races without qualifying data: {no_qualifying or 'none'}")
     winners = {}
     for row in tables["results"].values():
-        if row["finishing_position"] == "1":
-            winners[(row["season"], row["round"])] = winners.get((row["season"], row["round"]), 0) + 1
-    problems = [key for key in tables["races"] if winners.get(key) != 1]
+        if row["position_text"] == "1":
+            key = (row["season"], row["round"])
+            winners[key] = winners.get(key, 0) + 1
+    problems = sorted(key for key in tables["races"] if winners.get(key) != 1)
     print(f"Races without exactly one winner: {problems or 'none'}")
-
 
 if __name__ == "__main__":
     main()

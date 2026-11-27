@@ -36,7 +36,10 @@ def pace_comparison(quali, pace, races):
 def outcome_checks(outcomes, data):
     official = pd.concat([data["results"], data["sprint"]]).groupby(
         KEY + ["lineage"], as_index=False)["points"].sum().rename(columns={"points": "api_points"})
-    points = outcomes.merge(official, on=KEY + ["lineage"], how="left")
+    points = outcomes.merge(official, on=KEY + ["lineage"], how="outer", validate="one_to_one",
+                            indicator=True)
+    if not points["_merge"].eq("both").all():
+        raise ValueError("Outcome and official points rows don't match up")
     table = points.query("season in [2008, 2023]").groupby(["season", "lineage"])[
         ["rescored_points", "api_points"]].sum()
     return ("Total weighted wins by season\n"

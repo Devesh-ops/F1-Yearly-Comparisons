@@ -36,7 +36,7 @@ def team_session_bests(data):
     """Each lineage's best lap in Q1, Q2 and Q3 per race.
 
     Q3 is dropped for 2006 to 2009 (run on race fuel, DECISIONS.md 2.4). Teams with no
-    Q1 time had their qualifying deleted and are left out (DECISIONS.md 5.2).
+    Q1 time are left out of that race (DECISIONS.md 5.2; mostly deleted qualifying times).
     """
     quali = data["qualifying"].rename(columns={f"{s.lower()}_seconds": s for s in SEGMENTS})
     quali.loc[quali.season <= 2009, "Q3"] = float("nan")
@@ -84,7 +84,7 @@ def qualifying_tables(data):
     # Main method (DECISIONS.md 2.12): each team's best lap from any session.
     teams["best_seconds"] = teams[SEGMENTS].min(axis=1)
     teams["best_session"] = teams[SEGMENTS].idxmin(axis=1)
-    # Equal best laps keep the official qualifying order.
+    # Equal best laps are ordered by the last-common-session rank (DECISIONS.md 2.13).
     teams = teams.sort_values(KEY + ["best_seconds", "rank_last_common"])
     teams["rank"] = teams.groupby(KEY).cumcount() + 1
     teams["leader_seconds"] = teams.groupby(KEY)["best_seconds"].transform("min")
